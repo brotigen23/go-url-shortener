@@ -8,6 +8,6 @@ func CreateAlias(url string) string {
 	return storage.Storage.Put([]byte(url))
 }
 
-func GetUrl(alias string) string {
+func GetURL(alias string) string {
 	return storage.Storage.FindByAlias([]byte(alias))
 }

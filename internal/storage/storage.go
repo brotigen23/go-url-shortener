@@ -25,15 +25,15 @@ func NewStorage() *storage {
 }
 
 func (s *storage) Put(url []byte) string {
-	if s.FindByUrl(url) != "" {
-		return s.FindByUrl(url)
+	if s.FindByURL(url) != "" {
+		return s.FindByURL(url)
 	}
 	s.urls = append(s.urls, string(url))
 	s.alias = append(s.alias, utils.NewRandomString(ALIASLENGHT))
 	return s.alias[len(s.alias)-1]
 }
 
-func (s storage) FindByUrl(url []byte) string {
+func (s storage) FindByURL(url []byte) string {
 	for i, v := range s.urls {
 		if string(url) == string(v) {
 			return s.alias[i]

@@ -32,7 +32,7 @@ func IndexHandler(rw http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		alias := r.URL.Path[1:]
 		fmt.Println(alias)
-		url := services.GetUrl(alias)
+		url := services.GetURL(alias)
 		if url == "" {
 			rw.WriteHeader(http.StatusNotFound)
 			return
