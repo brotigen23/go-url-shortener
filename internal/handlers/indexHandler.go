@@ -32,9 +32,7 @@ func IndexHandler(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 		rw.Header().Set("location", string(url))
-		fmt.Println("Location: ", rw.Header().Get("location"))
-		//http.Redirect(rw, r, string(url), http.StatusTemporaryRedirect)
-		rw.Write([]byte(url))
+		rw.WriteHeader(http.StatusTemporaryRedirect)
 	default:
 		rw.WriteHeader(http.StatusNotAcceptable)
 		rw.Write([]byte("Несуществующий метод"))
