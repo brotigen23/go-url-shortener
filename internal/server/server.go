@@ -29,5 +29,5 @@ func RunWithChi() error {
 	r.Get("/{id}", handlers.IndexGET)
 	r.Post("/", handlers.IndexPOST)
 
-	return http.ListenAndServe(*config.Config.BaseHost, r)
+	return http.ListenAndServe(config.ConfigENV.Host, r)
 }
