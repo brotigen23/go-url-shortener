@@ -18,6 +18,6 @@ var Config = config{}
 
 func InitConfig() {
 	Config.BaseHost = flag.String("a", "localhost:8080", "base host")
-	Config.BastHostForAliases = flag.String("b", "http://localhost:8080/", "base host for aliases")
+	Config.BastHostForAliases = flag.String("b", "http://localhost:8080", "base host for aliases")
 	flag.Parse()
 }
