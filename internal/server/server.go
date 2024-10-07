@@ -5,6 +5,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/handlers"
 	"github.com/go-chi/chi/v5"
 )
@@ -28,5 +29,5 @@ func RunWithChi() error {
 	r.Get("/{id}", handlers.IndexGET)
 	r.Post("/", handlers.IndexPOST)
 
-	return http.ListenAndServe(":8080", r)
+	return http.ListenAndServe(*config.Config.BaseHost, r)
 }
