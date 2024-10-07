@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/handlers"
+	"github.com/go-chi/chi/v5"
 )
 
 func Run() error {
@@ -20,4 +21,12 @@ func Run() error {
 
 	// Run server
 	return http.ListenAndServe(":8080", mux)
+}
+
+func RunWithChi() error {
+	r := chi.NewRouter()
+	r.Get("/{id}", handlers.IndexGET)
+	r.Post("/", handlers.IndexPOST)
+
+	return http.ListenAndServe(":8080", r)
 }
