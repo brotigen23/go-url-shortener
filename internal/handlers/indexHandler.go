@@ -26,16 +26,21 @@ func IndexHandler(rw http.ResponseWriter, r *http.Request) {
 	// -------------------------------------------------------------------------- GET
 	case http.MethodGet:
 		alias := r.URL.Path[1:]
-		fmt.Println(alias)
 		url := services.GetURL(alias)
 		if url == "" {
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		}
 		rw.Header().Set("location", string(url))
-		http.Redirect(rw, r, string(url), http.StatusTemporaryRedirect)
+		fmt.Println("Location: ", rw.Header().Get("location"))
+		//http.Redirect(rw, r, string(url), http.StatusTemporaryRedirect)
 		rw.Write([]byte(url))
+	default:
+		rw.WriteHeader(http.StatusNotAcceptable)
+		rw.Write([]byte("Несуществующий метод"))
+
 	}
+
 	fmt.Println("Storage:")
 	storage.Storage.Print()
 }
