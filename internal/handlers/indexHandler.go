@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/services"
-	"github.com/brotigen23/go-url-shortener/internal/storage"
 )
 
 func IndexHandler(rw http.ResponseWriter, r *http.Request) {
@@ -36,9 +34,5 @@ func IndexHandler(rw http.ResponseWriter, r *http.Request) {
 	default:
 		rw.WriteHeader(http.StatusNotAcceptable)
 		rw.Write([]byte("Несуществующий метод"))
-
 	}
-
-	fmt.Println("Storage:")
-	storage.Storage.Print()
 }

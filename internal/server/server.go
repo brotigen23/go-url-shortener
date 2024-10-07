@@ -16,7 +16,7 @@ func Run() error {
 	mux.HandleFunc("/", handlers.IndexHandler)
 
 	// Handlers
-	mux.HandleFunc("/status", handlers.StatusHandler)
+	//mux.HandleFunc("/status", handlers.StatusHandler)
 
 	// Run server
 	return http.ListenAndServe(":8080", mux)
