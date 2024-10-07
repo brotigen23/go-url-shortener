@@ -59,5 +59,5 @@ func IndexPOST(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 
 	// Запись ответа
-	rw.Write([]byte(*config.Config.BastHostForAliases + alias))
+	rw.Write([]byte(*config.Config.BastHostForAliases + "/" + alias))
 }
