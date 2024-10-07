@@ -56,3 +56,11 @@ func (s storage) Print() {
 	}
 
 }
+
+func (s storage) String() string {
+	ret := ""
+	for i := range s.urls {
+		ret += fmt.Sprintf("[%v] %v\n", s.urls[i], s.alias[i])
+	}
+	return ret
+}

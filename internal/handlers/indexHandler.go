@@ -22,7 +22,7 @@ func IndexHandler(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusCreated)
 
 		// Запись ответа
-		rw.Write([]byte(alias))
+		rw.Write([]byte("http://localhost:8080/" + alias))
 	// -------------------------------------------------------------------------- GET
 	case http.MethodGet:
 		alias := r.URL.Path[1:]
