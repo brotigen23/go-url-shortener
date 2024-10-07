@@ -13,11 +13,6 @@ func IndexHandler(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	// -------------------------------------------------------------------------- POST
 	case http.MethodPost:
-		// Content type
-		if r.Header.Get("content-type") != "text/plain" {
-			http.Error(rw, "not allow this content-type", http.StatusBadRequest)
-			return
-		}
 		// Считывание
 		url, _ := io.ReadAll(r.Body)
 		alias := services.CreateAlias(string(url))
