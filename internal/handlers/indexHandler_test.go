@@ -42,6 +42,7 @@ func TestPOST(t *testing.T) {
 			IndexHandler(w, request)
 
 			res := w.Result()
+			defer res.Body.Close()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode)
 		})
@@ -75,6 +76,7 @@ func TestGET(t *testing.T) {
 			IndexHandler(w, request)
 
 			res := w.Result()
+			defer res.Body.Close()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode)
 			// получаем и проверяем тело запроса
