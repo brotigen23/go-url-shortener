@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/go-chi/chi/v5"
 )
@@ -58,5 +59,5 @@ func IndexPOST(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 
 	// Запись ответа
-	rw.Write([]byte("http://localhost:8080/" + alias))
+	rw.Write([]byte(*config.Config.BastHostForAliases + "/" + alias))
 }

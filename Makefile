@@ -1,10 +1,10 @@
 all: test run
 
 run:
-	go run cmd/shortener/server/main.go
+	go run cmd/shortener/main.go
 
 test:
 	go test ./internal/handlers
 
 client:
-	go run cmd/shortener/client/main.go
+	go run cmd/client/main.go
