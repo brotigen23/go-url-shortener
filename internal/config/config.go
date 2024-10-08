@@ -2,7 +2,9 @@ package config
 
 import (
 	"flag"
-	"os"
+	"log"
+
+	"github.com/caarlos0/env"
 )
 
 /*
@@ -11,20 +13,28 @@ import (
 */
 
 type config struct {
-	ServerAddress string `env:"SERVER_ADDRESS"`
-	BaseURL       string `env:"BASE_URL"`
+	BaseHost           *string
+	BastHostForAliases *string
 }
 
 var Config = config{}
 
 func InitConfig() {
-	flag.StringVar(&Config.ServerAddress, "a", "localhost:8080", "base host")
-	flag.StringVar(&Config.BaseURL, "b", "http://localhost:8080", "base host for aliases")
+	Config.BaseHost = flag.String("a", "localhost:8080", "base host")
+	Config.BastHostForAliases = flag.String("b", "http://localhost:8080", "base host for aliases")
 	flag.Parse()
-	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
-		Config.ServerAddress = envRunAddr
-	}
-	if envRunAddr := os.Getenv("BASE_URL"); envRunAddr != "" {
-		Config.BaseURL = envRunAddr
+}
+
+type configENV struct {
+	Host               string `env:"SERVERBASEHOST"`
+	BastHostForAliases string `env:"BASEHOSTFORALIASES"`
+}
+
+var ConfigENV = configENV{}
+
+func InitConfigENV() {
+	err := env.Parse(&ConfigENV)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
