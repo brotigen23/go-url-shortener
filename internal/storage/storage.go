@@ -18,43 +18,35 @@ type storage struct {
 var Storage = NewStorage()
 
 func NewStorage() *storage {
-	return &storage{
-		urls:  []string{"https://ya.ru", "https://google.com"},
-		alias: []string{"asdfgh", "qwerty"},
-	}
+	return &storage{}
 }
 
 func (s *storage) Put(url []byte) string {
-	if s.FindByURL(url) != "" {
-		return s.FindByURL(url)
+	// if exists 
+	if val, err := s.FindByURL(url); err == nil {
+		return val
 	}
+	// if not
 	s.urls = append(s.urls, string(url))
 	s.alias = append(s.alias, utils.NewRandomString(ALIASLENGHT))
 	return s.alias[len(s.alias)-1]
 }
 
-func (s storage) FindByURL(url []byte) string {
+func (s storage) FindByURL(url []byte) (string, error) {
 	for i, v := range s.urls {
 		if string(url) == string(v) {
-			return s.alias[i]
+			return s.alias[i], nil
 		}
 	}
-	return ""
+	return "", fmt.Errorf("alias not found")
 }
-func (s storage) FindByAlias(alias []byte) string {
+func (s storage) FindByAlias(alias []byte) (string, error) {
 	for i, v := range s.alias {
 		if string(alias) == string(v) {
-			return s.urls[i]
+			return s.urls[i], nil
 		}
 	}
-	return ""
-}
-
-func (s storage) Print() {
-	for i := range s.urls {
-		fmt.Printf("[%v] %v\n", s.urls[i], s.alias[i])
-	}
-
+	return "", fmt.Errorf("URL not found")
 }
 
 func (s storage) String() string {
