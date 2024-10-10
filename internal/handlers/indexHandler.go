@@ -39,5 +39,8 @@ func (handler indexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 	rw.WriteHeader(http.StatusCreated)
 
 	// Запись ответа
-	rw.Write([]byte(handler.config.BaseURL + "/" + alias))
+	_, err := rw.Write([]byte(handler.config.BaseURL + "/" + alias))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
 }
