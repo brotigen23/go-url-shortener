@@ -3,6 +3,7 @@ package server
 // main.go
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
@@ -10,24 +11,11 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func Run() error {
-
-	// Mux
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", handlers.IndexHandler)
-
-	// Handlers
-	//mux.HandleFunc("/status", handlers.StatusHandler)
-
-	// Run server
-	return http.ListenAndServe(":8080", mux)
-}
-
-func RunWithChi() error {
+func Run(conf *config.Config) error {
 	r := chi.NewRouter()
-	r.Get("/{id}", handlers.IndexGET)
-	r.Post("/", handlers.IndexPOST)
-
-	return http.ListenAndServe(config.ConfigENV.Host, r)
+	indexHandler := handlers.NewIndexHandler(conf)
+	r.Get("/{id}", indexHandler.HandleGET)
+	r.Post("/", indexHandler.HandlePOST)
+	fmt.Printf("server running on %v\nbase url for alias is %v\n", conf.ServerAddress, conf.BaseURL)
+	return http.ListenAndServe(conf.ServerAddress, r)
 }

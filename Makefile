@@ -1,4 +1,6 @@
-all: test run
+.PHONY: all run test client
+
+all: run
 
 run:
 	go run cmd/shortener/main.go
