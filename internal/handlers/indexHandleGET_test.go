@@ -69,6 +69,7 @@ func TestIndexGetHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			handler.HandleGET(w, request)
 			result := w.Result()
+			defer result.Body.Close()
 
 			// Status code
 			assert.Equal(t, test.statusCode, result.StatusCode)
