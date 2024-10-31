@@ -26,7 +26,10 @@ func NewRandomString(size int) string {
 }
 
 func LoadLocalAliases(filePath string) ([]model.Alias, error) {
-	file, _ := os.OpenFile(filePath+FILENAME, os.O_RDONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(filePath+FILENAME, os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
 	buf := bufio.NewReader(file)
 
 	var aliases []model.Alias
@@ -34,7 +37,10 @@ func LoadLocalAliases(filePath string) ([]model.Alias, error) {
 		if data, err := buf.ReadBytes('\n'); err == nil {
 			alias := &model.Alias{}
 
-			json.Unmarshal(data, alias)
+			err = json.Unmarshal(data, alias)
+			if err != nil {
+				return nil, err
+			}
 			aliases = append(aliases, *alias)
 		} else {
 			break
@@ -44,12 +50,24 @@ func LoadLocalAliases(filePath string) ([]model.Alias, error) {
 }
 
 func SaveLocalAliases(aliases []model.Alias, filePath string) error {
-	return nil
-	file, _ := os.OpenFile(filePath+FILENAME, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(filePath+FILENAME, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		return err
+	}
 	for _, alias := range aliases {
-		data, _ := json.Marshal(alias)
-		file.Write(data)
-		file.Write([]byte("\n"))
+		data, err := json.Marshal(alias)
+		if err != nil {
+			return err
+		}
+		_, err = file.Write(data)
+		if err != nil {
+			return err
+		}
+
+		_, err = file.Write([]byte("\n"))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

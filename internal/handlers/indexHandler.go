@@ -134,6 +134,6 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h IndexHandler) GetAliases() []model.Alias {
-	return *h.service.GetAll()
+func (handler IndexHandler) GetAliases() []model.Alias {
+	return *handler.service.GetAll()
 }
