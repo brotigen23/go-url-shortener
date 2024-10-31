@@ -1,4 +1,4 @@
-.PHONY: all run test client
+.PHONY: all run test client postgresRun
 
 all: run
 
@@ -10,3 +10,6 @@ test:
 
 client:
 	go run cmd/client/main.go
+
+postgresRun:
+	psql -h localhost -U myuser -d mydb
