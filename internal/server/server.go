@@ -60,10 +60,6 @@ func Run(conf *config.Config) error {
 	if err := server.Shutdown(ctx); err != nil {
 		return err
 	}
-
-	//err = http.ListenAndServe(conf.ServerAddress, r)
-	if err != nil {
-	}
 	duration := time.Since(start)
 
 	logger.Sugar().Infoln(

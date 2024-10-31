@@ -9,8 +9,6 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
 )
 
-const FILENAME = "aliases.txt"
-
 func NewRandomString(size int) string {
 
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
@@ -26,7 +24,7 @@ func NewRandomString(size int) string {
 }
 
 func LoadLocalAliases(filePath string) ([]model.Alias, error) {
-	file, err := os.OpenFile(filePath+FILENAME, os.O_RDONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +48,7 @@ func LoadLocalAliases(filePath string) ([]model.Alias, error) {
 }
 
 func SaveLocalAliases(aliases []model.Alias, filePath string) error {
-	file, err := os.OpenFile(filePath+FILENAME, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}

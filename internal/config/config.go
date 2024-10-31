@@ -20,7 +20,7 @@ func NewConfig() *Config {
 	ret := &Config{}
 	flag.StringVar(&ret.ServerAddress, "a", "localhost:8080", "base host")
 	flag.StringVar(&ret.BaseURL, "b", "http://localhost:8080", "base host for aliases")
-	flag.StringVar(&ret.FileStoragePath, "f", "./", "Path to file with aliases")
+	flag.StringVar(&ret.FileStoragePath, "f", "./aliases.txt", "Path to file with aliases")
 	flag.Parse()
 	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
 		ret.ServerAddress = envRunAddr
