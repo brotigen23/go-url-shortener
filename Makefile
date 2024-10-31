@@ -13,3 +13,9 @@ client:
 
 postgresRun:
 	psql -h localhost -U myuser -d mydb
+
+t:
+	curl --header "Content-Type: application/json" \
+  	--request POST \
+  	--data '{"url":"ya.ru"}' \
+  	localhost:8080/api/shorten

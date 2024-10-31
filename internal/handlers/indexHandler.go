@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -8,6 +10,36 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/go-chi/chi/v5"
 )
+
+/*
+Добавьте в код сервера новый эндпоинт POST /api/shorten, который будет принимать в теле запроса JSON-объект
+{"url":"<some_url>"} и возвращать в ответ объект {"result":"<short_url>"}.
+Запрос может иметь такой вид:
+
+POST http://localhost:8080/api/shorten HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+{
+  "url": "https://practicum.yandex.ru"
+}
+
+Ответ может быть таким:
+
+HTTP/1.1 201 OK
+Content-Type: application/json
+Content-Length: 30
+{
+ "result": "http://localhost:8080/EwHXdJfB"
+}
+*/
+
+type req struct {
+	URL string `json:"url"`
+}
+
+type resp struct {
+	Result string `json:"result"`
+}
 
 type indexHandler struct {
 	config  *config.Config
@@ -52,6 +84,43 @@ func (handler indexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 
 	// Запись ответа
 	_, err = rw.Write([]byte(handler.config.BaseURL + "/" + model.GetAlias()))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+}
+
+func (handler indexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Request) {
+	req := new(req)
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	model, err := handler.service.Save(req.URL)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Заголовки и статус ответа
+	rw.Header().Set("content-type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+	resp := new(resp)
+	resp.Result = handler.config.BaseURL + "/" + model.GetAlias()
+
+	// Запись ответа
+	response, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err = rw.Write(response)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
