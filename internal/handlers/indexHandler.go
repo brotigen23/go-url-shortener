@@ -20,7 +20,12 @@ func NewIndexHandler(conf *config.Config) *indexHandler {
 		service: services.NewService(8),
 	}
 }
-
+func NewMockIndexHandler(conf *config.Config) *indexHandler {
+	return &indexHandler{
+		config:  conf,
+		service: services.NewMockService(8),
+	}
+}
 func (handler indexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
 	model, err := handler.service.GetURLByAlias(alias) //handler.repo.GetByAlias(alias)
@@ -31,7 +36,6 @@ func (handler indexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("location", string(model.GetURL()))
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }
-
 
 func (handler indexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) {
 	url, _ := io.ReadAll(r.Body)

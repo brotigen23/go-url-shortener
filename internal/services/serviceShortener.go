@@ -6,7 +6,6 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 )
 
-
 type ServiceShortener struct {
 	repo        repositories.Repository
 	lengthAlias int
@@ -15,6 +14,13 @@ type ServiceShortener struct {
 func NewService(lengthAlias int) *ServiceShortener {
 	return &ServiceShortener{
 		repo:        repositories.NewInMemoryRepository(),
+		lengthAlias: lengthAlias,
+	}
+}
+
+func NewMockService(lengthAlias int) *ServiceShortener {
+	return &ServiceShortener{
+		repo:        repositories.NewMockInMemoryRepository(),
 		lengthAlias: lengthAlias,
 	}
 }

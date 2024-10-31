@@ -30,32 +30,32 @@ func NewTest(testName string, statusCode int, model *model.Alias, location strin
 
 func TestIndexGetHandler(t *testing.T) {
 	config := config.NewConfig()
-	handler := NewIndexHandler(config)
+	handler := NewMockIndexHandler(config)
 	service := handler.service
 
-	service.Save("https://ya.ru")
-	service.Save("https://google.com")
-	service.Save("https://rutube.ru")
-	service.Save("http://metanit.com")
+	_, _ = service.Save("https://ya.ru")
+	_, _ = service.Save("https://google.com")
+	_, _ = service.Save("https://rutube.ru")
+	_, _ = service.Save("http://metanit.com")
 
 	tests := []*testGET{
 		NewTest(
 			"ya.ru test #1",
 			http.StatusTemporaryRedirect,
-			nil,
+			model.NewAlias("https://ya.ru", "qwertyui"),
 			"https://ya.ru"),
 		NewTest(
 			"google.com test #2",
 			http.StatusTemporaryRedirect,
-			nil,
+			model.NewAlias("https://google.com", "asdfghjk"),
 			"https://google.com"),
 		NewTest(
 			"not found test #3",
 			http.StatusNotFound,
-			nil, //"https://yandex.ru",
+			model.NewAlias("", ""),
 			""),
 	}
-	
+
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/"+test.model.GetAlias(), nil)

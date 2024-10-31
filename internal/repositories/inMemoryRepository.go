@@ -18,6 +18,15 @@ func NewInMemoryRepository() *inMemoryRepo {
 	}
 }
 
+func NewMockInMemoryRepository() *inMemoryRepo {
+	return &inMemoryRepo{
+		aliases: []model.Alias{
+			*model.NewAlias("https://ya.ru", "qwertyui"),
+			*model.NewAlias("https://google.com", "asdfghjk"),
+		},
+	}
+}
+
 func (repo inMemoryRepo) GetByAlias(alias string) (*model.Alias, error) {
 	for _, v := range repo.aliases {
 		if v.GetAlias() == alias {
