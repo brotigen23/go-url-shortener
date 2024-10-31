@@ -8,6 +8,7 @@ import (
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/services"
+	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -70,7 +71,13 @@ func (handler indexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (handler indexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) {
-	url, _ := io.ReadAll(r.Body)
+
+	var url []byte
+	if r.Header.Get("Content-Encoding") == "gzip" {
+		url, _ = utils.Unzip(r.Body)
+	} else {
+		url, _ = io.ReadAll(r.Body)
+	}
 
 	model, err := handler.service.Save(string(url))
 	if err != nil {
