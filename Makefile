@@ -19,3 +19,19 @@ t:
   	--request POST \
   	--data '{"url":"ya.ru"}' \
   	localhost:8080/api/shorten
+	curl -i --header "Content-Type: application/json" \
+  	--request POST \
+  	--data '{"url":"yandex.ru"}' \
+  	localhost:8080/api/shorten
+	curl -i --header "Content-Type: application/json" \
+  	--request POST \
+  	--data '{"url":"google.com"}' \
+  	localhost:8080/api/shorten
+	curl -i --header "Content-Type: application/json" \
+  	--request POST \
+  	--data '{"url":"metanit.net"}' \
+  	localhost:8080/api/shorten
+	curl -i --header "Content-Type: application/json" \
+  	--request POST \
+  	--data '{"url":"habr.com"}' \
+  	localhost:8080/api/shorten

@@ -7,4 +7,5 @@ type Repository interface {
 	GetByURL(url string) (*model.Alias, error)
 	GetAll() *[]model.Alias
 	Save(model model.Alias) error
+	Migrate(model []model.Alias)
 }

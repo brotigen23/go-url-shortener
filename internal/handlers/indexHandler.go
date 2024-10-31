@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
+	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
@@ -42,24 +43,24 @@ type resp struct {
 	Result string `json:"result"`
 }
 
-type indexHandler struct {
+type IndexHandler struct {
 	config  *config.Config
 	service *services.ServiceShortener
 }
 
-func NewIndexHandler(conf *config.Config) *indexHandler {
-	return &indexHandler{
+func NewIndexHandler(conf *config.Config, aliases []model.Alias) *IndexHandler {
+	return &IndexHandler{
 		config:  conf,
-		service: services.NewService(8),
+		service: services.NewService(8, aliases),
 	}
 }
-func NewMockIndexHandler(conf *config.Config) *indexHandler {
-	return &indexHandler{
+func NewMockIndexHandler(conf *config.Config) *IndexHandler {
+	return &IndexHandler{
 		config:  conf,
 		service: services.NewMockService(8),
 	}
 }
-func (handler indexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
+func (handler IndexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
 	model, err := handler.service.GetURLByAlias(alias) //handler.repo.GetByAlias(alias)
 	if err != nil {
@@ -70,7 +71,7 @@ func (handler indexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (handler indexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) {
+func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) {
 
 	var url []byte
 	if r.Header.Get("Content-Encoding") == "gzip" {
@@ -96,7 +97,7 @@ func (handler indexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (handler indexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Request) {
+func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Request) {
 	req := new(req)
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
@@ -131,4 +132,8 @@ func (handler indexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
+}
+
+func (h IndexHandler) GetAliases() []model.Alias {
+	return *h.service.GetAll()
 }

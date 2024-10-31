@@ -12,9 +12,9 @@ type inMemoryRepo struct {
 	aliases []model.Alias
 }
 
-func NewInMemoryRepository() *inMemoryRepo {
+func NewInMemoryRepository(a []model.Alias) *inMemoryRepo {
 	return &inMemoryRepo{
-		aliases: []model.Alias{},
+		aliases: a,
 	}
 }
 
@@ -54,4 +54,8 @@ func (repo *inMemoryRepo) Save(model model.Alias) error {
 }
 func (repo *inMemoryRepo) GetAll() *[]model.Alias {
 	return &repo.aliases
+}
+
+func (repo *inMemoryRepo) Migrate(aliases []model.Alias) {
+	repo.aliases = append(repo.aliases, aliases...)
 }

@@ -11,9 +11,9 @@ type ServiceShortener struct {
 	lengthAlias int
 }
 
-func NewService(lengthAlias int) *ServiceShortener {
+func NewService(lengthAlias int, a []model.Alias) *ServiceShortener {
 	return &ServiceShortener{
-		repo:        repositories.NewInMemoryRepository(),
+		repo:        repositories.NewInMemoryRepository(a),
 		lengthAlias: lengthAlias,
 	}
 }
