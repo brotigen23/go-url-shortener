@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIndexHandePOST(t *testing.T) {
+func TestIndexHandlePOST(t *testing.T) {
 
 	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	handler := NewIndexHandler(&config)
@@ -33,7 +33,7 @@ func TestIndexHandePOST(t *testing.T) {
 	}{
 		{
 			testName: "test #1",
-			url:      "https://ya.ru",
+			url:      "https://123.ru",
 			want: want{
 				statusCode:  http.StatusCreated,
 				contentType: "text/plain",
@@ -41,7 +41,7 @@ func TestIndexHandePOST(t *testing.T) {
 		},
 		{
 			testName: "test #2",
-			url:      "https://yandex.ru",
+			url:      "https://1232.ru",
 			want: want{
 				statusCode:  http.StatusCreated,
 				contentType: "text/plain",
@@ -51,7 +51,7 @@ func TestIndexHandePOST(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodPost, "/", nil)
+			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader([]byte(test.url)))
 			w := httptest.NewRecorder()
 			handler.HandlePOST(w, request)
 			result := w.Result()
@@ -70,7 +70,7 @@ func TestIndexHandePOST(t *testing.T) {
 
 }
 
-func TestIndexHandePOSTAPI(t *testing.T) {
+func TestIndexHandlePOSTAPI(t *testing.T) {
 
 	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	handler := NewIndexHandler(&config)

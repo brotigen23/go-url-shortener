@@ -25,7 +25,7 @@ func Withgzip(next http.HandlerFunc) http.HandlerFunc {
 
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
-			io.WriteString(w, err.Error())
+			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
 		}
 		defer gz.Close()

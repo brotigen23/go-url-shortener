@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -125,6 +124,4 @@ func (handler indexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
-
-	fmt.Println(handler.service.GetAll())
 }
