@@ -45,10 +45,13 @@ func (repo inMemoryRepo) GetByURL(url string) (*model.Alias, error) {
 }
 func (repo *inMemoryRepo) Save(model model.Alias) error {
 	for _, v := range repo.aliases {
-		if v == model {
+		if v.GetURL() == model.GetURL() {
 			return fmt.Errorf("already exist")
 		}
 	}
 	repo.aliases = append(repo.aliases, model)
 	return nil
+}
+func (repo *inMemoryRepo) GetAll() *[]model.Alias {
+	return &repo.aliases
 }

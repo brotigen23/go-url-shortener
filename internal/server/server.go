@@ -20,9 +20,17 @@ func Run(conf *config.Config) error {
 
 	r := chi.NewRouter()
 	indexHandler := handlers.NewIndexHandler(conf)
+
 	r.Get("/{id}", handlers.WithLogging(indexHandler.HandleGET, logger.Sugar()))
-	r.Post("/", handlers.WithLogging(indexHandler.HandlePOST, logger.Sugar()))
-	r.Post("/api/shorten", handlers.WithLogging(indexHandler.HandlePOSTAPI, logger.Sugar()))
-	fmt.Printf("server is running on %v\nbase url for alias is %v\n", conf.ServerAddress, conf.BaseURL)
+
+	r.Post("/", handlers.WithLogging(handlers.Withgzip(indexHandler.HandlePOST), logger.Sugar()))
+
+	r.Post("/api/shorten", handlers.WithLogging(handlers.Withgzip(indexHandler.HandlePOSTAPI), logger.Sugar()))
+
+	logger.Sugar().Infoln(
+		"Server is running",
+		"Server address", conf.ServerAddress,
+		"Base URL", conf.BaseURL,
+	)
 	return http.ListenAndServe(conf.ServerAddress, r)
 }

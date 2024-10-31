@@ -40,3 +40,7 @@ func (s ServiceShortener) Save(url string) (*model.Alias, error) {
 
 	return model, err
 }
+
+func (s ServiceShortener) GetAll() *[]model.Alias {
+	return s.repo.GetAll()
+}
