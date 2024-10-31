@@ -1,5 +1,6 @@
 package storage
 
+
 import (
 	"fmt"
 
@@ -45,12 +46,4 @@ func (s Storage) FindByAlias(alias []byte) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("URL not found")
-}
-
-func (s Storage) String() string {
-	ret := ""
-	for i := range s.urls {
-		ret += fmt.Sprintf("[%v] %v\n", s.urls[i], s.alias[i])
-	}
-	return ret
 }

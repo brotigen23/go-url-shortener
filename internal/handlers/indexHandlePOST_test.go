@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
-	"github.com/brotigen23/go-url-shortener/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +15,7 @@ import (
 func TestIndexHandePOST(t *testing.T) {
 
 	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	handler := NewIndexHandler(&config, storage.NewStorage())
+	handler := NewIndexHandler(&config)
 
 	responseRegexp, _ := regexp.Compile("http://" + config.ServerAddress + "/" + "\\w{" + "8" + "}")
 
