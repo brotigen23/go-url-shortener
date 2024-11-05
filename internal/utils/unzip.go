@@ -18,3 +18,11 @@ func Unzip(body io.Reader) ([]byte, error) {
 	}
 	return ret, nil
 }
+func UnzipReader(body io.Reader) (io.ReadCloser, error) {
+	gz, err := gzip.NewReader(body)
+	if err != nil {
+		return nil, err
+	}
+	defer gz.Close()
+	return gz, nil
+}

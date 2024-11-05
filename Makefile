@@ -6,7 +6,7 @@ run:
 	go run cmd/shortener/main.go
 
 test:
-	go test ./internal/handlers -v -cover
+	go test ./internal/handlers -v -cover 
 
 client:
 	go run cmd/client/main.go

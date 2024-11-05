@@ -31,9 +31,9 @@ func Run(conf *config.Config) error {
 
 	r.Get("/{id}", handlers.WithLogging(indexHandler.HandleGET, logger.Sugar()))
 
-	r.Post("/", handlers.WithLogging(handlers.Withgzip(indexHandler.HandlePOST), logger.Sugar()))
+	r.Post("/", handlers.WithLogging(handlers.WithZip(indexHandler.HandlePOST), logger.Sugar()))
 
-	r.Post("/api/shorten", handlers.WithLogging(handlers.Withgzip(indexHandler.HandlePOSTAPI), logger.Sugar()))
+	r.Post("/api/shorten", handlers.WithLogging(handlers.WithZip(indexHandler.HandlePOSTAPI), logger.Sugar()))
 
 	logger.Sugar().Infoln(
 		"Server is running",

@@ -18,27 +18,28 @@ func NewService(lengthAlias int, a []model.Alias) *ServiceShortener {
 	}
 }
 
-func NewMockService(lengthAlias int) *ServiceShortener {
-	return &ServiceShortener{
-		repo:        repositories.NewMockInMemoryRepository(),
-		lengthAlias: lengthAlias,
+func (s ServiceShortener) GetURLByAlias(alias string) (string, error) {
+	ret, err := s.repo.GetByAlias(alias)
+	if err != nil {
+		return "", err
 	}
+	return ret.URL, nil
 }
 
-func (s ServiceShortener) GetURLByAlias(alias string) (*model.Alias, error) {
-	return s.repo.GetByAlias(alias)
+func (s ServiceShortener) GetAliasByURL(url string) (string, error) {
+	ret, err := s.repo.GetByURL(url)
+	if err != nil {
+		return "", err
+	}
+	return ret.Alias, nil
 }
 
-func (s ServiceShortener) GetAliasByURL(url string) (*model.Alias, error) {
-	return s.repo.GetByURL(url)
-}
-
-func (s ServiceShortener) Save(url string) (*model.Alias, error) {
+func (s ServiceShortener) Save(url string) (string, error) {
 	model := model.NewAlias(url, utils.NewRandomString(s.lengthAlias))
 
 	err := s.repo.Save(*model)
 
-	return model, err
+	return model.Alias, err
 }
 
 func (s ServiceShortener) GetAll() *[]model.Alias {

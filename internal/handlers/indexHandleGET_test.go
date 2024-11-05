@@ -8,6 +8,7 @@ import (
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
+	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ type testGET struct {
 }
 
 func NewTest(testName string, statusCode int, model *model.Alias, location string) *testGET {
-	t := new(testGET)
+	t := &testGET{}
 	t.testName = testName
 	t.statusCode = statusCode
 	t.model = model
@@ -29,26 +30,22 @@ func NewTest(testName string, statusCode int, model *model.Alias, location strin
 }
 
 func TestIndexGetHandler(t *testing.T) {
-	config := config.NewConfig()
-	handler := NewMockIndexHandler(config)
-	service := handler.service
 
-	_, _ = service.Save("https://ya.ru")
-	_, _ = service.Save("https://google.com")
-	_, _ = service.Save("https://rutube.ru")
-	_, _ = service.Save("http://metanit.com")
+	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
+	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
+	handler := NewIndexHandler(&config, aliases)
 
 	tests := []*testGET{
 		NewTest(
 			"ya.ru test #1",
 			http.StatusTemporaryRedirect,
-			model.NewAlias("https://ya.ru", "qwertyui"),
-			"https://ya.ru"),
+			model.NewAlias("ya.ru", "VXcyQ01q"),
+			"ya.ru"),
 		NewTest(
 			"google.com test #2",
 			http.StatusTemporaryRedirect,
-			model.NewAlias("https://google.com", "asdfghjk"),
-			"https://google.com"),
+			model.NewAlias("yandex.ru", "K5IFupTM"),
+			"yandex.ru"),
 		NewTest(
 			"not found test #3",
 			http.StatusNotFound,

@@ -10,15 +10,17 @@ import (
 	"testing"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
+	"github.com/brotigen23/go-url-shortener/internal/dto"
+	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestIndexHandlePOST(t *testing.T) {
 
-	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	handler := NewIndexHandler(&config, nil)
-
+	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
+	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
+	handler := NewIndexHandler(&config, aliases)
 	responseRegexp, _ := regexp.Compile("http://" + config.ServerAddress + "/" + "\\w{" + "8" + "}")
 
 	type want struct {
@@ -61,7 +63,6 @@ func TestIndexHandlePOST(t *testing.T) {
 			resBody, err := io.ReadAll(result.Body)
 
 			require.NoError(t, err)
-
 			assert.Equal(t, test.want.statusCode, result.StatusCode)
 			assert.Equal(t, test.want.contentType, result.Header.Get("content-type"))
 			assert.Regexp(t, responseRegexp, string(resBody))
@@ -72,38 +73,45 @@ func TestIndexHandlePOST(t *testing.T) {
 
 func TestIndexHandlePOSTAPI(t *testing.T) {
 
-	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	handler := NewIndexHandler(&config, nil)
-
-	//responseRegexp, _ := regexp.Compile("http://" + config.ServerAddress + "/" + "\\w{" + "8" + "}")
+	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
+	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
+	handler := NewIndexHandler(&config, aliases)
 
 	type want struct {
 		statusCode  int
 		contentType string
-		resp        resp
+		resp        dto.AliasResponse
 	}
 
 	tests := []struct {
 		testName string
-		url      req
+		url      dto.URLRequest
 		want     want
 	}{
 		{
 			testName: "test #1",
-			url:      req{"https://ya.ru"},
+			url: dto.URLRequest{
+				URL: "https://ya.ru",
+			},
 			want: want{
 				statusCode:  http.StatusCreated,
 				contentType: "application/json",
-				resp:        resp{"asd"},
+				resp: dto.AliasResponse{
+					Result: "asd",
+				},
 			},
 		},
 		{
 			testName: "test #2",
-			url:      req{"https://yandex.ru"},
+			url: dto.URLRequest{
+				URL: "https://yandex.ru",
+			},
 			want: want{
 				statusCode:  http.StatusCreated,
 				contentType: "application/json",
-				resp:        resp{"asd"},
+				resp: dto.AliasResponse{
+					Result: "asd",
+				},
 			},
 		},
 	}
@@ -113,6 +121,7 @@ func TestIndexHandlePOSTAPI(t *testing.T) {
 			body, _ := json.Marshal(test.url)
 			request, _ := http.NewRequest("POST", "/api/shorten", bytes.NewReader(body))
 			w := httptest.NewRecorder()
+
 			handler.HandlePOSTAPI(w, request)
 			result := w.Result()
 
