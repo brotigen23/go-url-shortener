@@ -50,13 +50,13 @@ func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerF
 			next.ServeHTTP(&lw, r)
 
 			duration := time.Since(start)
-
 			logger.Infoln(
 				"uri", r.RequestURI,
 				"method", r.Method,
 				"status", responseData.status,
 				"duration", duration,
 				"size", responseData.size,
+				"encoding", r.Header.Get("Content-Encoding"),
 			)
 		})
 }

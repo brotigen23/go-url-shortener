@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -38,7 +39,7 @@ func (handler IndexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 
 func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
-
+	fmt.Println("BODY: ", string(body))
 	alias, err := handler.service.Save(string(body))
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)

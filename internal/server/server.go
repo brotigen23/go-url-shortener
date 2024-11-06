@@ -29,11 +29,11 @@ func Run(conf *config.Config) error {
 
 	indexHandler := handlers.NewIndexHandler(conf, aliases)
 
-	r.Get("/{id}", handlers.WithLogging(handlers.WithUnzip(indexHandler.HandleGET), logger.Sugar()))
+	r.Get("/{id}", handlers.WithLogging(handlers.WithZip(indexHandler.HandleGET), logger.Sugar()))
 
-	r.Post("/", handlers.WithLogging(handlers.WithZip(indexHandler.HandlePOST), logger.Sugar()))
+	r.Post("/", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOST), logger.Sugar()))
 
-	r.Post("/api/shorten", handlers.WithLogging(handlers.WithZip(indexHandler.HandlePOSTAPI), logger.Sugar()))
+	r.Post("/api/shorten", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), logger.Sugar()))
 
 	logger.Sugar().Infoln(
 		"Server is running",
