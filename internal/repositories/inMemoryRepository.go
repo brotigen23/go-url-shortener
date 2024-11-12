@@ -49,3 +49,8 @@ func (repo *inMemoryRepo) GetAll() *[]model.Alias {
 func (repo *inMemoryRepo) Migrate(aliases []model.Alias) {
 	repo.aliases = append(repo.aliases, aliases...)
 }
+
+func (repo *inMemoryRepo) Close() {
+}
+
+func (repo *inMemoryRepo) CheckDBConnection() error { return nil }

@@ -14,7 +14,7 @@ type ServiceShortener struct {
 
 func NewService(config *config.Config, lengthAlias int, a []model.Alias) *ServiceShortener {
 	return &ServiceShortener{
-		repo:        repositories.NewPostgresRepository(config.DatabaseDSN),
+		repo:        repositories.NewInMemoryRepository(a),
 		lengthAlias: lengthAlias,
 	}
 }
