@@ -39,6 +39,7 @@ func (handler IndexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("content-type", "text/plain")
 	body, _ := io.ReadAll(r.Body)
 	fmt.Println("BODY: ", string(body))
 	alias, err := handler.service.Save(string(body))
@@ -50,7 +51,6 @@ func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 	}
 
 	// Заголовки и статус ответа
-	rw.Header().Set("content-type", "text/plain")
 	rw.WriteHeader(http.StatusCreated)
 
 	// Запись ответа
@@ -61,6 +61,7 @@ func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 }
 
 func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("content-type", "application/json")
 	req := dto.NewURLRequest()
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
@@ -85,7 +86,6 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 	}
 
 	// Заголовки и статус ответа
-	rw.Header().Set("content-type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 	resp := dto.NewAliasResponse()
 	resp.Result = handler.config.BaseURL + "/" + alias
