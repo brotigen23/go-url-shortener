@@ -124,7 +124,7 @@ func (handler IndexHandler) Batch(rw http.ResponseWriter, r *http.Request) {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
-		res = append(res, &dto.BatchResponse{ID: value.ID, Alias: alias})
+		res = append(res, &dto.BatchResponse{ID: value.ID, Alias: handler.config.BaseURL + "/" + alias})
 	}
 
 	// Заголовки и статус ответа
