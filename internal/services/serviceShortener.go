@@ -49,9 +49,11 @@ func (s *ServiceShortener) GetAliasByURL(url string) (string, error) {
 
 func (s *ServiceShortener) Save(url string) (string, error) {
 	model := model.NewAlias(url, utils.NewRandomString(s.lengthAlias))
-	
-	err := s.repo.Save(*model)
 
+	err := s.repo.Save(*model)
+	if err != nil && err.Error() == `pq: duplicate key value violates unique constraint "aliases_URL_key"` {
+		model, _ = s.repo.GetByURL(model.URL)
+	}
 	return model.Alias, err
 }
 

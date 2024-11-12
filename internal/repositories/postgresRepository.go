@@ -18,7 +18,7 @@ func NewPostgresRepository(stringConnection string) *PostgresRepository {
 	if err != nil {
 		panic(err)
 	}
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS Aliases("URL" VARCHAR, "Alias" VARCHAR)`)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS Aliases("URL" VARCHAR UNIQUE, "Alias" VARCHAR)`)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
@@ -33,9 +33,6 @@ func (repo *PostgresRepository) CloseConnection() {
 
 func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
 	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE "Alias" = $1`, alias)
-	if query == nil {
-		return nil, fmt.Errorf("row not found")
-	}
 	var URL string
 	var Alias string
 	err := query.Scan(&URL, &Alias)
@@ -45,16 +42,21 @@ func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
 	}
 	return &model.Alias{URL: URL, Alias: Alias}, nil
 }
-func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) { return nil, nil }
-func (repo *PostgresRepository) GetAll() *[]model.Alias                    { return nil }
-func (repo *PostgresRepository) Save(model model.Alias) error {
-	query := repo.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM Aliases WHERE "URL" = $1)`, model.URL)
-	var flag bool
-	query.Scan(&flag)
-
-	if flag {
-		return fmt.Errorf("row already exists")
+func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) {
+	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE "URL" = $1`, url)
+	var URL string
+	var Alias string
+	err := query.Scan(&URL, &Alias)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
+	return &model.Alias{URL: URL, Alias: Alias}, nil
+
+}
+
+func (repo *PostgresRepository) GetAll() *[]model.Alias { return nil }
+func (repo *PostgresRepository) Save(model model.Alias) error {
 	result, err := repo.db.Exec("INSERT INTO Aliases VALUES($1, $2)", model.URL, model.Alias)
 	if err != nil {
 		return err

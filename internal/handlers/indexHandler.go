@@ -43,8 +43,10 @@ func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 	fmt.Println("BODY: ", string(body))
 	alias, err := handler.service.Save(string(body))
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
+		fmt.Println(err)
+		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_URL_key"` {
+			rw.WriteHeader(http.StatusConflict)
+		}
 	}
 
 	// Заголовки и статус ответа
@@ -73,8 +75,13 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 
 	alias, err := handler.service.Save(req.URL)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
+		fmt.Println(err)
+		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_URL_key"` {
+			rw.WriteHeader(http.StatusConflict)
+		} else {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Заголовки и статус ответа
