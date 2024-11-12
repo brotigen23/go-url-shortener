@@ -11,8 +11,8 @@ test:
 client:
 	go run cmd/client/main.go
 
-postgresRun:
-	psql -h localhost -U myuser -d mydb
+setENV:
+	DATABASE_DSN="host=localhost port=5432 user=myuser password=1234 dbname=mydb sslmode=disable"
 
 t:
 	curl -i --header "Content-Type: application/json" \

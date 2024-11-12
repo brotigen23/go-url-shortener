@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repositories"
@@ -13,9 +15,18 @@ type ServiceShortener struct {
 }
 
 func NewService(config *config.Config, lengthAlias int, a []model.Alias) *ServiceShortener {
-	return &ServiceShortener{
-		repo:        repositories.NewInMemoryRepository(a),
-		lengthAlias: lengthAlias,
+	if config.DatabaseDSN != "" {
+		fmt.Println("Create DB")
+		return &ServiceShortener{
+			repo:        repositories.NewPostgresRepository(config.DatabaseDSN),
+			lengthAlias: lengthAlias,
+		}
+	} else {
+		fmt.Println("Set inMem")
+		return &ServiceShortener{
+			repo:        repositories.NewInMemoryRepository(a),
+			lengthAlias: lengthAlias,
+		}
 	}
 }
 
@@ -24,6 +35,7 @@ func (s *ServiceShortener) GetURLByAlias(alias string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(ret)
 	return ret.URL, nil
 }
 
