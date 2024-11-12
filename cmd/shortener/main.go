@@ -1,7 +1,16 @@
 package main
 
-import "github.com/brotigen23/go-url-shortener/internal/app"
+import (
+	"fmt"
+	"os"
+
+	"github.com/brotigen23/go-url-shortener/internal/app"
+)
 
 func main() {
-	app.Run()
+	err := app.Run()
+	if err != nil {
+		fmt.Printf("App run error: %v", err)
+		os.Exit(1)
+	}
 }

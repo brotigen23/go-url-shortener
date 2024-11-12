@@ -1,0 +1,5 @@
+{"url":"ya.ru","alias":"VXcyQ01q"}
+{"url":"yandex.ru","alias":"K5IFupTM"}
+{"url":"google.com","alias":"BZv2Ptew"}
+{"url":"metanit.net","alias":"qkH2nlrx"}
+{"url":"habr.com","alias":"n0jxtPBr"}

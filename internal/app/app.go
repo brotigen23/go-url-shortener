@@ -1,25 +1,17 @@
 package app
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/server"
-	"github.com/brotigen23/go-url-shortener/internal/storage"
 )
 
-func Run() {
+func Run() error {
 	config := config.NewConfig()
-	storage := storage.NewStorage()
 
-
-	err := server.Run(config, storage)
-
-
+	err := server.Run(config)
 
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

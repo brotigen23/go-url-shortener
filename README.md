@@ -1,32 +1,69 @@
-# go-musthave-shortener-tpl
+# go-url-shortener
 
-Шаблон репозитория для трека «Сервис сокращения URL».
+```mermaid
+flowchart LR
 
-## Начало работы
-
-1. Склонируйте репозиторий в любую подходящую директорию на вашем компьютере.
-2. В корне репозитория выполните команду `go mod init <name>` (где `<name>` — адрес вашего репозитория на GitHub без префикса `https://`) для создания модуля.
-
-## Обновление шаблона
-
-Чтобы иметь возможность получать обновления автотестов и других частей шаблона, выполните команду:
-
-```
-git remote add -m main template https://github.com/Yandex-Practicum/go-musthave-shortener-tpl.git
+App --> |Create| Config
+App --> |Run| Server
+Server --> |Create| IndexHandler
+Server --> |Create| chi.NewRoute
+ IndexHandler --> |Register| chi.NewRoute
 ```
 
-Для обновления кода автотестов выполните команду:
 
+
+```mermaid
+---
+title: URL shotrener
+---
+classDiagram
+
+    class Config{
+        +ServerAddress string
+        +BaseURL string
+    }
+
+    class Alias{
+        -url string
+        -alias string
+
+        +constructor(url string, alias string) *Alias
+        +GetURL() string
+        +GetAlias() string
+
+    }
+
+    class Repository{
+        +GetByAlias(alias string) *Alias, error
+        +GetByURL(url string) *Alias, error
+        +Save(model Alias) error
+    }
+    class inMemoryRepository{     
+        -aliases []Alias
+
+        +GetByAlias(alias string) *Alias, error
+        +GetByURL(url string) *Alias, error
+        +Save(model Alias) error
+    }
+    class Service{
+        -repo Repository
+        -lengthAlias int
+    }
+
+    class indexHandler{
+        -config *config.Config
+        -service *service.Service
+
+        +HandleGET(rw http.ResponseWriter, r *http.Request)
+        +HandlePOST(rw http.ResponseWriter, r *http.Request)
+    }
+
+    indexHandler o-- Config
+    indexHandler o-- Service
+    Service --* Repository
+    Repository <|-- inMemoryRepository
+
+
+    Repository --> Alias
 ```
-git fetch template && git checkout template/main .github
-```
 
-Затем добавьте полученные изменения в свой репозиторий.
-
-## Запуск автотестов
-
-Для успешного запуска автотестов называйте ветки `iter<number>`, где `<number>` — порядковый номер инкремента. Например, в ветке с названием `iter4` запустятся автотесты для инкрементов с первого по четвёртый.
-
-При мёрже ветки с инкрементом в основную ветку `main` будут запускаться все автотесты.
-
-Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).

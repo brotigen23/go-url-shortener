@@ -7,70 +7,63 @@ import (
 	"testing"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
-	"github.com/brotigen23/go-url-shortener/internal/storage"
+	"github.com/brotigen23/go-url-shortener/internal/model"
+	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
-var stor = storage.NewStorage()
-
 type testGET struct {
 	testName   string
 	statusCode int
-	url        string
-	alias      string
+	model      *model.Alias
 	location   string
 }
 
-func NewTest(testName string, statusCode int, url string, location string) *testGET {
-	t := new(testGET)
+func NewTest(testName string, statusCode int, model *model.Alias, location string) *testGET {
+	t := &testGET{}
 	t.testName = testName
 	t.statusCode = statusCode
-	t.url = url
+	t.model = model
 	t.location = location
-	t.alias, _ = stor.FindByURL([]byte(url))
 	return t
 }
 
 func TestIndexGetHandler(t *testing.T) {
-	stor.Put([]byte("https://ya.ru"))
-	stor.Put([]byte("https://google.com"))
-	stor.Put([]byte("https://rutube.ru"))
-	stor.Put([]byte("http://metanit.com"))
+
+	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
+	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
+	handler := NewIndexHandler(&config, aliases)
 
 	tests := []*testGET{
 		NewTest(
 			"ya.ru test #1",
 			http.StatusTemporaryRedirect,
-			"https://ya.ru",
-			"https://ya.ru"),
+			model.NewAlias("ya.ru", "VXcyQ01q"),
+			"ya.ru"),
 		NewTest(
 			"google.com test #2",
 			http.StatusTemporaryRedirect,
-			"https://google.com",
-			"https://google.com"),
+			model.NewAlias("yandex.ru", "K5IFupTM"),
+			"yandex.ru"),
 		NewTest(
 			"not found test #3",
 			http.StatusNotFound,
-			"https://yandex.ru",
+			model.NewAlias("", ""),
 			""),
 	}
 
-	config := config.NewConfig()
-	handler := NewIndexHandler(config, stor)
-
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodGet, "/"+test.alias, nil)
+			request := httptest.NewRequest(http.MethodGet, "/"+test.model.GetAlias(), nil)
 			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("id", test.alias)
+			rctx.URLParams.Add("id", test.model.GetAlias())
 
 			request = request.WithContext(context.WithValue(request.Context(), chi.RouteCtxKey, rctx))
 			w := httptest.NewRecorder()
 			handler.HandleGET(w, request)
 			result := w.Result()
 			defer result.Body.Close()
-
 			// Status code
 			assert.Equal(t, test.statusCode, result.StatusCode)
 			assert.Equal(t, test.location, result.Header.Get("location"))

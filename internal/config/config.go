@@ -11,20 +11,25 @@ import (
 */
 
 type Config struct {
-	ServerAddress string
-	BaseURL       string
+	ServerAddress   string
+	BaseURL         string
+	FileStoragePath string
 }
 
 func NewConfig() *Config {
 	ret := &Config{}
 	flag.StringVar(&ret.ServerAddress, "a", "localhost:8080", "base host")
 	flag.StringVar(&ret.BaseURL, "b", "http://localhost:8080", "base host for aliases")
+	flag.StringVar(&ret.FileStoragePath, "f", "./aliases.txt", "Path to file with aliases")
 	flag.Parse()
 	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
 		ret.ServerAddress = envRunAddr
 	}
 	if envRunAddr := os.Getenv("BASE_URL"); envRunAddr != "" {
 		ret.BaseURL = envRunAddr
+	}
+	if envRunAddr := os.Getenv("FILE_STORAGE_PATH"); envRunAddr != "" {
+		ret.FileStoragePath = envRunAddr
 	}
 	return ret
 }
