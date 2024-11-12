@@ -48,9 +48,12 @@ func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
 func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) { return nil, nil }
 func (repo *PostgresRepository) GetAll() *[]model.Alias                    { return nil }
 func (repo *PostgresRepository) Save(model model.Alias) error {
-	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE URL = $1`, model.URL)
-	if query != nil {
-		return fmt.Errorf("already exist")
+	query := repo.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM Aliases WHERE "URL" = $1)`, model.URL)
+	var flag bool
+	query.Scan(&flag)
+
+	if flag {
+		return fmt.Errorf("row already exists")
 	}
 	result, err := repo.db.Exec("INSERT INTO Aliases VALUES($1, $2)", model.URL, model.Alias)
 	if err != nil {
