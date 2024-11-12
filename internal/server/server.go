@@ -67,9 +67,11 @@ func Run(conf *config.Config) error {
 		"server shutdown",
 		"time running", duration,
 	)
-	err = utils.SaveLocalAliases(indexHandler.GetAliases(), conf.FileStoragePath)
-	if err != nil {
-		return err
+	if conf.DatabaseDSN == "" {
+		err = utils.SaveLocalAliases(indexHandler.GetAliases(), conf.FileStoragePath)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
