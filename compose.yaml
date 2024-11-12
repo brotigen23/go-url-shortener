@@ -3,7 +3,8 @@ services:
     image: postgres
     environment:
       POSTGRES_DB: "mydb"
-      POSTGRES_USER: "user1"
-      POSTGRES_PASSWORD: "pass"
+      POSTGRES_USER: "myuser"
+      POSTGRES_PASSWORD: "1234"
     ports:
       - "5432:5432"
+    restart: always

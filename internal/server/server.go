@@ -30,6 +30,7 @@ func Run(conf *config.Config) error {
 	indexHandler := handlers.NewIndexHandler(conf, aliases)
 
 	r.Get("/{id}", handlers.WithLogging(handlers.WithZip(indexHandler.HandleGET), logger.Sugar()))
+	r.Get("/{id}", handlers.WithLogging(handlers.WithZip(indexHandler.Ping), logger.Sugar()))
 
 	r.Post("/", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOST), logger.Sugar()))
 

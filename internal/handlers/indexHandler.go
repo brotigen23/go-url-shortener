@@ -22,7 +22,7 @@ type IndexHandler struct {
 func NewIndexHandler(conf *config.Config, aliases []model.Alias) *IndexHandler {
 	return &IndexHandler{
 		config:  conf,
-		service: services.NewService(8, aliases),
+		service: services.NewService(conf ,8, aliases),
 	}
 }
 
@@ -92,6 +92,15 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
+}
+
+func (handler IndexHandler) Ping(rw http.ResponseWriter, r *http.Request) {
+	if handler.service.CheckDBConnection() != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+
 }
 
 func (handler IndexHandler) GetAliases() []model.Alias {
