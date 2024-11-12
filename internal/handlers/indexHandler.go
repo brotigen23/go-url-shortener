@@ -103,6 +103,46 @@ func (handler IndexHandler) Ping(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 
 }
+func (handler IndexHandler) Batch(rw http.ResponseWriter, r *http.Request) {
+	req := []dto.URL{}
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	fmt.Println(req)
+	res := []*dto.BatchResponse{}
+	for _, value := range req {
+		fmt.Println("Saving ", value.URL)
+		alias, err := handler.service.Save(value.URL)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+		res = append(res, &dto.BatchResponse{ID: value.ID, Alias: alias})
+	}
+
+	// Заголовки и статус ответа
+	rw.Header().Set("content-type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+
+	// Запись ответа
+	response, err := json.Marshal(res)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err = rw.Write(response)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+
+}
 
 func (handler IndexHandler) GetAliases() []model.Alias {
 	return *handler.service.GetAll()

@@ -33,7 +33,7 @@ func Run(conf *config.Config) error {
 	r.Get("/ping", handlers.WithLogging(handlers.WithZip(indexHandler.Ping), logger.Sugar()))
 
 	r.Post("/", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOST), logger.Sugar()))
-
+	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.Batch), logger.Sugar()))
 	r.Post("/api/shorten", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), logger.Sugar()))
 
 	logger.Sugar().Infoln(

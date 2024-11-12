@@ -49,7 +49,7 @@ func (s *ServiceShortener) GetAliasByURL(url string) (string, error) {
 
 func (s *ServiceShortener) Save(url string) (string, error) {
 	model := model.NewAlias(url, utils.NewRandomString(s.lengthAlias))
-
+	
 	err := s.repo.Save(*model)
 
 	return model.Alias, err
