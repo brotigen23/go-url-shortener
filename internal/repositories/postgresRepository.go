@@ -18,7 +18,7 @@ func NewPostgresRepository(stringConnection string) *PostgresRepository {
 	if err != nil {
 		panic(err)
 	}
-	_, err = db.Exec(`CREATE TABLE Aliases("URL" VARCHAR, "Alias" VARCHAR)`)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS Aliases("URL" VARCHAR, "Alias" VARCHAR)`)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
