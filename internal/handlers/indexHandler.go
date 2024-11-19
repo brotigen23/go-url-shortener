@@ -80,7 +80,7 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 	alias, err := handler.service.Save(req.URL)
 	if err != nil {
 		fmt.Println(err)
-		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_URL_key"` {
+		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
