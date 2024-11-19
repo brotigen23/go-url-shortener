@@ -48,7 +48,7 @@ func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 	alias, err := handler.service.Save(string(body))
 	if err != nil {
 		fmt.Println(err)
-		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_URL_key"` {
+		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
 		}
 	}
