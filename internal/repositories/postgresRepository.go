@@ -7,14 +7,24 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/db/migration"
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 type PostgresRepository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *zap.Logger
 }
 
 func NewPostgresRepository(stringConnection string) (*PostgresRepository, error) {
-	ret := &PostgresRepository{}
+
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		return nil, err
+	}
+
+	ret := &PostgresRepository{
+		logger: logger,
+	}
 
 	db, err := sql.Open("postgres", stringConnection)
 	if err != nil {
@@ -55,11 +65,24 @@ func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) {
 
 func (repo *PostgresRepository) GetAll() *[]model.Alias { return nil }
 func (repo *PostgresRepository) Save(model model.Alias) error {
-	result, err := repo.db.Exec("INSERT INTO Aliases VALUES($1, $2)", model.URL, model.Alias)
+	q, err := repo.db.Query("EXPLAIN ANALYZE INSERT INTO Aliases VALUES($1, $2)", model.URL, model.Alias)
 	if err != nil {
 		return err
 	}
-	fmt.Println(result)
+	var plan string
+	for q.Next() {
+		var s string
+		if err := q.Scan(&s); err != nil {
+			return err
+		}
+		plan += s
+	}
+	repo.logger.Sugar().Infoln(
+		"query plan", plan,
+	)
+	if err := q.Err(); err != nil {
+		return err
+	}
 	return nil
 }
 func (repo *PostgresRepository) Migrate(model []model.Alias) {}
