@@ -12,19 +12,15 @@ type PostgresRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresRepository(stringConnection string) *PostgresRepository {
+func NewPostgresRepository(stringConnection string) (*PostgresRepository, error) {
 	ret := &PostgresRepository{}
 	db, err := sql.Open("postgres", stringConnection)
 	if err != nil {
-		panic(err)
-	}
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS Aliases("URL" VARCHAR UNIQUE, "Alias" VARCHAR)`)
-	if err != nil {
-		fmt.Println("Error: ", err)
+		return nil, err
 	}
 	ret.db = db
 
-	return ret
+	return ret, nil
 }
 
 func (repo *PostgresRepository) CloseConnection() {

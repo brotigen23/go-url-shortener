@@ -27,7 +27,10 @@ func Run(conf *config.Config) error {
 
 	aliases, _ := utils.LoadLocalAliases(conf.FileStoragePath)
 
-	indexHandler := handlers.NewIndexHandler(conf, aliases)
+	indexHandler, err := handlers.NewIndexHandler(conf, aliases)
+	if err != nil {
+		return err
+	}
 
 	r.Get("/{id}", handlers.WithLogging(handlers.WithZip(indexHandler.HandleGET), logger.Sugar()))
 	r.Get("/ping", handlers.WithLogging(handlers.WithZip(indexHandler.Ping), logger.Sugar()))

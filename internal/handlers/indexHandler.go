@@ -10,7 +10,6 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/dto"
 	"github.com/brotigen23/go-url-shortener/internal/model"
-	"github.com/brotigen23/go-url-shortener/internal/repositories"
 	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/go-chi/chi/v5"
 )
@@ -20,11 +19,15 @@ type IndexHandler struct {
 	service *services.ServiceShortener
 }
 
-func NewIndexHandler(conf *config.Config, aliases []model.Alias) *IndexHandler {
+func NewIndexHandler(conf *config.Config, aliases []model.Alias) (*IndexHandler, error) {
+	service, err := services.NewService(conf, 8, aliases)
+	if err != nil {
+		return nil, err
+	}
 	return &IndexHandler{
 		config:  conf,
-		service: services.NewService(conf, 8, aliases),
-	}
+		service: service,
+	}, nil
 }
 
 func (handler IndexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
@@ -103,7 +106,7 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 }
 
 func (handler IndexHandler) Ping(rw http.ResponseWriter, r *http.Request) {
-	if repositories.NewPostgresRepository(handler.config.DatabaseDSN).CheckDBConnection() != nil {
+	if handler.service.CheckDBConnection() != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}

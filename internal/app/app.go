@@ -7,7 +7,6 @@ import (
 
 func Run() error {
 	config := config.NewConfig()
-
 	err := server.Run(config)
 
 	if err != nil {

@@ -14,19 +14,21 @@ type ServiceShortener struct {
 	lengthAlias int
 }
 
-func NewService(config *config.Config, lengthAlias int, a []model.Alias) *ServiceShortener {
+func NewService(config *config.Config, lengthAlias int, a []model.Alias) (*ServiceShortener, error) {
 	if config.DatabaseDSN != "" {
-		fmt.Println("Create DB")
-		return &ServiceShortener{
-			repo:        repositories.NewPostgresRepository(config.DatabaseDSN),
-			lengthAlias: lengthAlias,
+		db, err := repositories.NewPostgresRepository(config.DatabaseDSN)
+		if err != nil {
+			return nil, err
 		}
+		return &ServiceShortener{
+			repo:        db,
+			lengthAlias: lengthAlias,
+		}, nil
 	} else {
-		fmt.Println("Set inMem")
 		return &ServiceShortener{
 			repo:        repositories.NewInMemoryRepository(a),
 			lengthAlias: lengthAlias,
-		}
+		}, nil
 	}
 }
 
