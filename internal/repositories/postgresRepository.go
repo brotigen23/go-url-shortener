@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/brotigen23/go-url-shortener/internal/db/migration"
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	_ "github.com/lib/pq"
 )
@@ -14,12 +15,13 @@ type PostgresRepository struct {
 
 func NewPostgresRepository(stringConnection string) (*PostgresRepository, error) {
 	ret := &PostgresRepository{}
+
 	db, err := sql.Open("postgres", stringConnection)
 	if err != nil {
 		return nil, err
 	}
 	ret.db = db
-
+	migration.MigratePostgres(db)
 	return ret, nil
 }
 
