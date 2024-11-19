@@ -30,7 +30,7 @@ func (repo *PostgresRepository) CloseConnection() {
 }
 
 func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE "Alias" = $1`, alias)
+	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE Alias = $1`, alias)
 	var URL string
 	var Alias string
 	err := query.Scan(&URL, &Alias)
@@ -41,7 +41,7 @@ func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
 	return &model.Alias{URL: URL, Alias: Alias}, nil
 }
 func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE "URL" = $1`, url)
+	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE URL = $1`, url)
 	var URL string
 	var Alias string
 	err := query.Scan(&URL, &Alias)
