@@ -11,7 +11,7 @@ import (
 func Run() error {
 	config := config.NewConfig()
 	if config.DatabaseDSN != "" {
-		cmd := exec.Command("make", "migrate")
+		cmd := exec.Command("make", "DATABASE_DSN="+config.DatabaseDSN, "migrate")
 		stdout, err := cmd.Output()
 		if err != nil {
 			fmt.Println(err.Error())
