@@ -329,7 +329,6 @@ jobs:
           github.head_ref == 'iter23' ||
           github.head_ref == 'iter24'
         run: |
-          make migrate \
           shortenertestbeta -test.v -test.run=^TestIteration10$ \
               -binary-path=cmd/shortener/shortener \
               -source-path=. \
@@ -353,7 +352,6 @@ jobs:
           github.head_ref == 'iter23' ||
           github.head_ref == 'iter24'
         run: |
-          make migrate \
           shortenertestbeta -test.v -test.run=^TestIteration11$ \
               -binary-path=cmd/shortener/shortener \
               -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
@@ -375,7 +373,6 @@ jobs:
           github.head_ref == 'iter23' ||
           github.head_ref == 'iter24'
         run: |
-          make migrate \
           shortenertestbeta -test.v -test.run=^TestIteration12$ \
               -binary-path=cmd/shortener/shortener \
               -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
@@ -396,7 +393,6 @@ jobs:
           github.head_ref == 'iter23' ||
           github.head_ref == 'iter24'
         run: |
-          make migrate \
           shortenertestbeta -test.v -test.run=^TestIteration13$ \
               -binary-path=cmd/shortener/shortener \
               -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
@@ -416,7 +412,6 @@ jobs:
           github.head_ref == 'iter23' ||
           github.head_ref == 'iter24'
         run: |
-          make migrate \
           shortenertestbeta -test.v -test.run=^TestIteration14$ \
               -binary-path=cmd/shortener/shortener \
               -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
@@ -435,7 +430,6 @@ jobs:
           github.head_ref == 'iter23' ||
           github.head_ref == 'iter24'
         run: |
-          make migrate \
           shortenertestbeta -test.v -test.run=^TestIteration15$ \
               -binary-path=cmd/shortener/shortener \
               -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
