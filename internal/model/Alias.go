@@ -1,8 +1,8 @@
 package model
 
 type Alias struct {
-	URL   string `json:"url"`
-	Alias string `json:"alias"`
+	URL   string `json:"original_url"`
+	Alias string `json:"short_url"`
 }
 
 func NewAlias(url string, alias string) *Alias {

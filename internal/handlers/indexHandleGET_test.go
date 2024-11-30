@@ -33,7 +33,7 @@ func TestIndexGetHandler(t *testing.T) {
 
 	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
 	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
-	handler, _ := NewIndexHandler(&config, aliases)
+	handler, _ := NewIndexHandler(&config, aliases, nil)
 
 	tests := []*testGET{
 		NewTest(

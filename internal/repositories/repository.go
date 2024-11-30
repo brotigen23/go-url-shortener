@@ -9,7 +9,10 @@ type Repository interface {
 	Save(model model.Alias) error
 	Migrate(model []model.Alias)
 	CheckDBConnection() error
-
+	SaveUser(id string) error
+	GetUserByID(userID string) error
+	SaveUserURL(userID string, alias string) error
+	GetUserURL(userID string) ([]model.Alias, error)
 
 	Close()
 }

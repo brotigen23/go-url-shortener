@@ -12,6 +12,7 @@ import (
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/handlers"
+	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -25,19 +26,25 @@ func Run(conf *config.Config) error {
 
 	r := chi.NewRouter()
 
-	aliases, _ := utils.LoadLocalAliases(conf.FileStoragePath)
-
-	indexHandler, err := handlers.NewIndexHandler(conf, aliases)
+	authService, err := services.NewServiceAuth(conf)
 	if err != nil {
 		return err
 	}
 
-	r.Get("/{id}", handlers.WithLogging(handlers.WithZip(indexHandler.HandleGET), logger.Sugar()))
-	r.Get("/ping", handlers.WithLogging(handlers.WithZip(indexHandler.Ping), logger.Sugar()))
+	aliases, _ := utils.LoadLocalAliases(conf.FileStoragePath)
 
-	r.Post("/", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOST), logger.Sugar()))
-	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.Batch), logger.Sugar()))
-	r.Post("/api/shorten", handlers.WithLogging(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), logger.Sugar()))
+	indexHandler, err := handlers.NewIndexHandler(conf, aliases, logger)
+	if err != nil {
+		return err
+	}
+
+	r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.HandleGET), conf, authService), logger.Sugar()))
+	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
+	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
+
+	r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOST), conf, authService), logger.Sugar()))
+	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.Batch), conf, authService), logger.Sugar()))
+	r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), conf, authService), logger.Sugar()))
 
 	logger.Sugar().Infoln(
 		"Server is running",

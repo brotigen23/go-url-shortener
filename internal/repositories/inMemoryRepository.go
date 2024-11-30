@@ -54,3 +54,14 @@ func (repo *inMemoryRepo) Close() {
 }
 
 func (repo *inMemoryRepo) CheckDBConnection() error { return nil }
+
+func (repo *inMemoryRepo) SaveUser(id string) error { return nil }
+
+func (repo *inMemoryRepo) GetUserByID(userID string) error { return nil }
+
+func (repo *inMemoryRepo) SaveUserURL(userID string, alias string) error {
+	return nil
+}
+func (repo *inMemoryRepo) GetUserURL(userID string) ([]model.Alias, error) {
+	return nil, nil
+}

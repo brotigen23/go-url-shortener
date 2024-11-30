@@ -61,10 +61,6 @@ jobs:
           cd cmd/shortener
           go build -buildvcs=false -o shortener
           
-      - name: Setup goose
-        run: |
-          go install github.com/pressly/goose/v3/cmd/goose@latest
-  
       - name: "Code increment #1"
         if: |
           github.ref == 'refs/heads/main' ||

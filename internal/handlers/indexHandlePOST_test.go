@@ -20,7 +20,7 @@ func TestIndexHandlePOST(t *testing.T) {
 
 	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
 	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
-	handler, _ := NewIndexHandler(&config, aliases)
+	handler, _ := NewIndexHandler(&config, aliases, nil)
 	responseRegexp, _ := regexp.Compile("http://" + config.ServerAddress + "/" + "\\w{" + "8" + "}")
 
 	type want struct {
@@ -75,7 +75,7 @@ func TestIndexHandlePOSTAPI(t *testing.T) {
 
 	config := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "../../test/aliases.txt"}
 	aliases, _ := utils.LoadLocalAliases(config.FileStoragePath)
-	handler, _ := NewIndexHandler(&config, aliases)
+	handler, _ := NewIndexHandler(&config, aliases, nil)
 
 	type want struct {
 		statusCode  int

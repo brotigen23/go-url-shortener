@@ -15,18 +15,12 @@ type PostgresRepository struct {
 	logger *zap.Logger
 }
 
-func NewPostgresRepository(stringConnection string) (*PostgresRepository, error) {
-
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		return nil, err
-	}
-
+func NewPostgresRepository(driver string, stringConnection string, logger *zap.Logger) (*PostgresRepository, error) {
 	ret := &PostgresRepository{
 		logger: logger,
 	}
 
-	db, err := sql.Open("postgres", stringConnection)
+	db, err := sql.Open(driver, stringConnection)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +34,7 @@ func (repo *PostgresRepository) CloseConnection() {
 }
 
 func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE Alias = $1`, alias)
+	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE Alias = $1`, alias)
 	var URL string
 	var Alias string
 	err := query.Scan(&URL, &Alias)
@@ -51,7 +45,7 @@ func (repo *PostgresRepository) GetByAlias(alias string) (*model.Alias, error) {
 	return &model.Alias{URL: URL, Alias: Alias}, nil
 }
 func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Aliases WHERE URL = $1`, url)
+	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE URL = $1`, url)
 	var URL string
 	var Alias string
 	err := query.Scan(&URL, &Alias)
@@ -65,7 +59,7 @@ func (repo *PostgresRepository) GetByURL(url string) (*model.Alias, error) {
 
 func (repo *PostgresRepository) GetAll() *[]model.Alias { return nil }
 func (repo *PostgresRepository) Save(model model.Alias) error {
-	q, err := repo.db.Query("EXPLAIN ANALYZE INSERT INTO Aliases VALUES($1, $2)", model.URL, model.Alias)
+	q, err := repo.db.Query("EXPLAIN ANALYZE INSERT INTO Short_URLs(URL, Alias) VALUES($1, $2)", model.URL, model.Alias)
 	if err != nil {
 		return err
 	}
@@ -89,4 +83,50 @@ func (repo *PostgresRepository) Migrate(model []model.Alias) {}
 func (repo *PostgresRepository) Close()                      {}
 func (repo *PostgresRepository) CheckDBConnection() error {
 	return repo.db.Ping()
+}
+
+func (repo *PostgresRepository) SaveUser(userID string) error {
+	query := "INSERT INTO Users(Name) VALUES($1)"
+	_, err := repo.db.Exec(query, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *PostgresRepository) GetUserByID(userID string) error {
+	query := repo.db.QueryRow(`SELECT * FROM Users WHERE ID = $1`, userID)
+	return query.Err()
+}
+
+func (repo *PostgresRepository) SaveUserURL(userName string, alias string) error {
+	query := "INSERT INTO Users_URLs(User_ID, URL_ID) VALUES((SELECT ID FROM Users WHERE Name = $1), (SELECT ID FROM Short_URLs WHERE Alias = $2))"
+	q, err := repo.db.Query(query, userName, alias)
+	if err != nil {
+		return err
+	}
+	if err := q.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *PostgresRepository) GetUserURL(userName string) ([]model.Alias, error) {
+	query := "SELECT url, alias FROM Short_URLs WHERE ID IN (( SELECT URL_ID FROM Users_URLs WHERE User_ID = (SELECT ID FROM Users WHERE Name = $1)))"
+	q, err := repo.db.Query(query, userName)
+	if err != nil {
+		return nil, err
+	}
+	var URL string
+	var Alias string
+	ret := make([]model.Alias, 0)
+	for q.Next() {
+		err = q.Scan(&URL, &Alias)
+		ret = append(ret, *model.NewAlias(URL, Alias))
+	}
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return ret, nil
 }

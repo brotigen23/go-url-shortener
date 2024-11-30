@@ -7,6 +7,7 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repositories"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
+	"go.uber.org/zap"
 )
 
 type ServiceShortener struct {
@@ -14,9 +15,9 @@ type ServiceShortener struct {
 	lengthAlias int
 }
 
-func NewService(config *config.Config, lengthAlias int, a []model.Alias) (*ServiceShortener, error) {
+func NewService(config *config.Config, lengthAlias int, a []model.Alias, logger *zap.Logger) (*ServiceShortener, error) {
 	if config.DatabaseDSN != "" {
-		db, err := repositories.NewPostgresRepository(config.DatabaseDSN)
+		db, err := repositories.NewPostgresRepository("postgres", config.DatabaseDSN, logger)
 		if err != nil {
 			return nil, err
 		}
@@ -69,4 +70,12 @@ func (s *ServiceShortener) CheckDBConnection() error {
 
 func (s *ServiceShortener) Close() {
 	s.repo.Close()
+}
+
+func (s *ServiceShortener) SaveUsersURL(userID string, alias string) error {
+	return s.repo.SaveUserURL(userID, alias)
+}
+
+func (s *ServiceShortener) GetUserURL(userID string) ([]model.Alias, error) {
+	return s.repo.GetUserURL(userID)
 }
