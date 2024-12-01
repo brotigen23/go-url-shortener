@@ -11,29 +11,29 @@ import (
 func WithAuth(next http.HandlerFunc, config *config.Config, service *services.ServiceAuth) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("MDDFE")
 			// Считываем значение
 			userID, err := r.Cookie("userID")
 			switch err {
 			case http.ErrNoCookie:
 				// Генерируем нового пользователя
-				id, err := service.GenerateID()
+				userName, err := service.GenerateID()
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
 				// Сохраняем созданного пользователя
-				service.SaveUser(id)
+				service.SaveUser(userName)
 				http.SetCookie(w, &http.Cookie{
 					Name:  "userID",
-					Value: id,
+					Value: userName,
 				})
 				r.AddCookie(&http.Cookie{
 					Name:  "userID",
-					Value: id,
+					Value: userName,
 				})
-				fmt.Println(r.Cookie("userID"))
 				// Подписываем нового пользователя
-				err = service.SignUser(id)
+				err = service.SignUser(userName)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return

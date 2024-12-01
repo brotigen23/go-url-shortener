@@ -4,8 +4,10 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
+	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repositories"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 )
@@ -27,25 +29,22 @@ func generateKey(size int) ([]byte, error) {
 	return b, nil
 }
 
-func NewServiceAuth(config *config.Config) (*ServiceAuth, error) {
+func NewServiceAuth(config *config.Config, repository repositories.Repository) (*ServiceAuth, error) {
 	key, err := generateKey(16)
 	if err != nil {
 		return nil, err
 	}
-	repo, err := repositories.NewPostgresRepository("postgres", config.DatabaseDSN, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	return &ServiceAuth{
 		signes: make(map[string][]byte),
-		repo:   repo,
+		repo:   repository,
 		key:    key,
 	}, nil
 }
 
-func (s *ServiceAuth) SaveUser(id string) error {
-	return s.repo.SaveUser(id)
+func (s *ServiceAuth) SaveUser(userName string) error {
+	fmt.Println(userName)
+	_, err := s.repo.SaveUser(*model.NewUser(0, userName))
+	return err
 }
 
 func (s *ServiceAuth) SignUser(userID string) error {
@@ -63,10 +62,6 @@ func (s *ServiceAuth) CheckSing(userID string) bool {
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
 	return hmac.Equal(s.signes[userID], sign)
-}
-
-func (s *ServiceAuth) IsExist(userID string) error {
-	return s.repo.GetUserByID(userID)
 }
 
 func (s *ServiceAuth) GenerateID() (string, error) {

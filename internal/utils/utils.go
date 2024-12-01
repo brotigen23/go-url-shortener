@@ -23,17 +23,17 @@ func NewRandomString(size int) string {
 	return string(b)
 }
 
-func LoadLocalAliases(filePath string) ([]model.Alias, error) {
+func LoadLocalAliases(filePath string) ([]model.ShortURL, error) {
 	file, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
 	buf := bufio.NewReader(file)
 
-	var aliases []model.Alias
+	var aliases []model.ShortURL
 	for {
 		if data, err := buf.ReadBytes('\n'); err == nil {
-			alias := &model.Alias{}
+			alias := &model.ShortURL{}
 
 			err = json.Unmarshal(data, alias)
 			if err != nil {
@@ -47,7 +47,11 @@ func LoadLocalAliases(filePath string) ([]model.Alias, error) {
 	return aliases, nil
 }
 
-func SaveLocalAliases(aliases []model.Alias, filePath string) error {
+func Foo(shortRULs []model.ShortURL, users []model.User, userURLs []model.Users_ShortURLs, filePath string) error {
+	return nil
+}
+
+func SaveStorage(aliases []model.ShortURL, filePath string) error {
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		return err

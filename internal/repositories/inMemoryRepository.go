@@ -6,18 +6,27 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
 )
 
-// привязать размер алиасов к конструктору репозитория
-
 type inMemoryRepo struct {
-	aliases []model.Alias
+	Users           []model.User
+	ShortURLs       []model.ShortURL
+	Users_ShortURLs []model.Users_ShortURLs
+	aliases         []model.ShortURL
 }
 
-func NewInMemoryRepository(a []model.Alias) *inMemoryRepo {
+func NewInMemoryRepo(shortURLs []model.ShortURL, users []model.User, userURLs []model.Users_ShortURLs) *inMemoryRepo {
 	return &inMemoryRepo{
-		aliases: a,
+		ShortURLs: shortURLs,
+		Users: users,
+		Users_ShortURLs: userURLs,
 	}
 }
-func (repo inMemoryRepo) GetByAlias(alias string) (*model.Alias, error) {
+
+func NewInMemoryRepository(shortURLs []model.ShortURL) *inMemoryRepo {
+	return &inMemoryRepo{
+		ShortURLs: shortURLs,
+	}
+}
+func (repo inMemoryRepo) GetByAlias(alias string) (*model.ShortURL, error) {
 	for _, v := range repo.aliases {
 		if v.GetAlias() == alias {
 			return &v, nil
@@ -25,7 +34,7 @@ func (repo inMemoryRepo) GetByAlias(alias string) (*model.Alias, error) {
 	}
 	return nil, fmt.Errorf("not found")
 }
-func (repo inMemoryRepo) GetByURL(url string) (*model.Alias, error) {
+func (repo inMemoryRepo) GetByURL(url string) (*model.ShortURL, error) {
 	for _, v := range repo.aliases {
 		if v.GetURL() == url {
 			return &v, nil
@@ -33,7 +42,7 @@ func (repo inMemoryRepo) GetByURL(url string) (*model.Alias, error) {
 	}
 	return nil, fmt.Errorf("not found")
 }
-func (repo *inMemoryRepo) Save(model model.Alias) error {
+func (repo *inMemoryRepo) Save(model model.ShortURL) error {
 	for _, v := range repo.aliases {
 		if v.GetURL() == model.GetURL() {
 			return fmt.Errorf("already exist")
@@ -42,26 +51,27 @@ func (repo *inMemoryRepo) Save(model model.Alias) error {
 	repo.aliases = append(repo.aliases, model)
 	return nil
 }
-func (repo *inMemoryRepo) GetAll() *[]model.Alias {
+func (repo *inMemoryRepo) GetAll() *[]model.ShortURL {
 	return &repo.aliases
 }
 
-func (repo *inMemoryRepo) Migrate(aliases []model.Alias) {
+func (repo *inMemoryRepo) Migrate(aliases []model.ShortURL) {
 	repo.aliases = append(repo.aliases, aliases...)
 }
 
-func (repo *inMemoryRepo) Close() {
+func (repo *inMemoryRepo) Close() error {
+	return nil
 }
 
 func (repo *inMemoryRepo) CheckDBConnection() error { return nil }
 
-func (repo *inMemoryRepo) SaveUser(id string) error { return nil }
+func (repo *inMemoryRepo) SaveUser1(id string) error { return nil }
 
-func (repo *inMemoryRepo) GetUserByID(userID string) error { return nil }
+func (repo *inMemoryRepo) GetUserByID1(userID string) error { return nil }
 
-func (repo *inMemoryRepo) SaveUserURL(userID string, alias string) error {
+func (repo *inMemoryRepo) SaveUserURL1(userID string, alias string) error {
 	return nil
 }
-func (repo *inMemoryRepo) GetUserURL(userID string) ([]model.Alias, error) {
+func (repo *inMemoryRepo) GetUserURL1(userID string) ([]model.ShortURL, error) {
 	return nil, nil
 }

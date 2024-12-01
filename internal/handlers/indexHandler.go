@@ -9,6 +9,7 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/dto"
 	"github.com/brotigen23/go-url-shortener/internal/model"
+	"github.com/brotigen23/go-url-shortener/internal/repositories"
 	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -19,8 +20,8 @@ type IndexHandler struct {
 	service *services.ServiceShortener
 }
 
-func NewIndexHandler(conf *config.Config, aliases []model.Alias, logger *zap.Logger) (*IndexHandler, error) {
-	service, err := services.NewService(conf, 8, aliases, logger)
+func NewIndexHandler(conf *config.Config, aliases []model.ShortURL, logger *zap.Logger, repository repositories.Repository) (*IndexHandler, error) {
+	service, err := services.NewService(conf, 8, aliases, logger, repository)
 	if err != nil {
 		return nil, err
 	}
@@ -32,10 +33,6 @@ func NewIndexHandler(conf *config.Config, aliases []model.Alias, logger *zap.Log
 
 func (handler IndexHandler) HandleGET(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
-	user, err := r.Cookie("userID")
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-	}
 	URL, err := handler.service.GetURLByAlias(alias)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
@@ -52,7 +49,11 @@ func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
-	alias, err := handler.service.Save(string(body))
+	user, err := r.Cookie("userID")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+	alias, err := handler.service.Save(user.Value, string(body))
 	if err != nil {
 		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
@@ -60,10 +61,6 @@ func (handler IndexHandler) HandlePOST(rw http.ResponseWriter, r *http.Request) 
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
-	}
-	user, err := r.Cookie("userID")
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
 	handler.service.SaveUsersURL(user.Value, alias)
 	// Заголовки и статус ответа
@@ -89,8 +86,12 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+	user, err := r.Cookie("userID")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
 
-	alias, err := handler.service.Save(req.URL)
+	alias, err := handler.service.Save(user.Value, req.URL)
 	if err != nil {
 		if err.Error() == `pq: duplicate key value violates unique constraint "aliases_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
@@ -98,10 +99,6 @@ func (handler IndexHandler) HandlePOSTAPI(rw http.ResponseWriter, r *http.Reques
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
-	}
-	user, err := r.Cookie("userID")
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
 	handler.service.SaveUsersURL(user.Value, alias)
 
@@ -150,7 +147,7 @@ func (handler IndexHandler) Batch(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, value := range req {
-		alias, err := handler.service.Save(value.URL)
+		alias, err := handler.service.Save(user.Value, value.URL)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -180,7 +177,7 @@ func (handler IndexHandler) Batch(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (handler IndexHandler) GetAliases() []model.Alias {
+func (handler IndexHandler) GetAliases() []model.ShortURL {
 	return *handler.service.GetAll()
 }
 

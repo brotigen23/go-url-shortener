@@ -12,6 +12,7 @@ import (
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/handlers"
+	"github.com/brotigen23/go-url-shortener/internal/repositories"
 	"github.com/brotigen23/go-url-shortener/internal/services"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
@@ -20,31 +21,51 @@ import (
 
 func Run(conf *config.Config) error {
 	logger, err := zap.NewDevelopment()
+	var repository repositories.Repository
+	if conf.DatabaseDSN != "" {
+		repository, err = repositories.NewPostgresRepository("postgres", conf.DatabaseDSN, logger)
+		if err != nil {
+			return err
+		}
+	} else {
+		repository = repositories.NewInMemoryRepo(nil, nil, nil)
+	}
+
 	if err != nil {
 		return fmt.Errorf("logger init error: %v", err)
 	}
 
 	r := chi.NewRouter()
 
-	authService, err := services.NewServiceAuth(conf)
+	authService, err := services.NewServiceAuth(conf, repository)
 	if err != nil {
 		return err
 	}
 
 	aliases, _ := utils.LoadLocalAliases(conf.FileStoragePath)
 
-	indexHandler, err := handlers.NewIndexHandler(conf, aliases, logger)
+	indexHandler, err := handlers.NewIndexHandler(conf, aliases, logger, repository)
 	if err != nil {
 		return err
 	}
 
-	r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.HandleGET), conf, authService), logger.Sugar()))
-	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
-	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
+	mainHandler, err := handlers.NewMainHandler(conf, aliases, logger, repository)
+	if err != nil {
+		return err
+	}
 
-	r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOST), conf, authService), logger.Sugar()))
-	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.Batch), conf, authService), logger.Sugar()))
-	r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), conf, authService), logger.Sugar()))
+	//r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.HandleGET), conf, authService), logger.Sugar()))
+	r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURL), conf, authService), logger.Sugar()))
+	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
+	//r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
+	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURLs), conf, authService), logger.Sugar()))
+
+	//r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOST), conf, authService), logger.Sugar()))
+	r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))
+	//r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), conf, authService), logger.Sugar()))
+	r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))
+	//r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.Batch), conf, authService), logger.Sugar()))
+	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURLs), conf, authService), logger.Sugar()))
 
 	logger.Sugar().Infoln(
 		"Server is running",
@@ -78,7 +99,7 @@ func Run(conf *config.Config) error {
 		"time running", duration,
 	)
 	if conf.DatabaseDSN == "" {
-		err = utils.SaveLocalAliases(indexHandler.GetAliases(), conf.FileStoragePath)
+		err = utils.SaveStorage(indexHandler.GetAliases(), conf.FileStoragePath)
 		if err != nil {
 			return err
 		}
