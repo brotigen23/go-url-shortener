@@ -28,26 +28,6 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		return "", err
 	}
-	// Get user's URL IDs
-	usersShortURLs, err := service.repository.GetUsersShortURLSByUserID(user.ID)
-	if err != nil && err.Error() != "sql: no rows in result set" {
-		return "", err
-	}
-	// Get user's shortURL
-	var urls []*model.ShortURL
-	for _, userShortURL := range usersShortURLs {
-		url, err := service.repository.GetShortURLByID(userShortURL.URLID)
-		if err != nil && err.Error() != "sql: no rows in result set" {
-			return "", nil
-		}
-		urls = append(urls, url)
-	}
-	// Check if URL already exists
-	for _, url := range urls {
-		if url.URL == URL {
-			return url.Alias, fmt.Errorf("URL already exists")
-		}
-	}
 	// Create new shortURL
 	alias := utils.NewRandomString(service.lengthAlias)
 	shortURL, err := service.repository.SaveShortURL(*model.NewShortURL(0, URL, alias))

@@ -37,7 +37,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	// ------------------------------- Read request data -------------------------------
 	var URL string
 	switch r.Header.Get("content-type") {
-	case "text/plain; charset=utf-8", "test/plain":
+	case "text/plain; charset=utf-8", "text/plain":
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -79,7 +79,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	var response []byte
 
 	switch r.Header.Get("content-type") {
-	case "text/plain; charset=utf-8":
+	case "text/plain; charset=utf-8", "text/plain":
 		rw.Header().Set("content-type", "text/plain")
 		response = []byte(handler.config.BaseURL + "/" + alias)
 	case "application/json":
