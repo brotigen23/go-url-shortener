@@ -75,33 +75,15 @@ func (service ServiceShortener) SaveURLs(userName string, URLs []string) (map[st
 	return ret, nil
 }
 
-func (service ServiceShortener) GetURL(userName string, alias string) (string, error) {
-	// Get user entity
-	user, err := service.repository.GetUserByName(userName)
+func (service ServiceShortener) GetURL(alias string) (string, error) {
+
+	ret, err := service.repository.GetShortURLByAlias(alias)
 	if err != nil {
-		return "", fmt.Errorf("user not found")
+		return "", err
 	}
-	// Get user's URL IDs
-	usersURLID, err := service.repository.GetUsersShortURLSByUserID(user.ID)
-	if err != nil {
-		return "", fmt.Errorf("no saved urls")
-	}
-	// Get user's shortURL
-	var urls []model.ShortURL
-	for _, urlID := range usersURLID {
-		url, err := service.repository.GetShortURLByID(urlID.URLID)
-		if err != nil {
-			return "", err
-		}
-		urls = append(urls, *url)
-	}
-	// Search url with alias
-	for _, url := range urls {
-		if url.Alias == alias {
-			return url.URL, nil
-		}
-	}
-	return "", fmt.Errorf("url not found")
+
+	return ret.URL, nil
+
 }
 
 func (service ServiceShortener) GetURLs(userName string) (map[string]string, error) {

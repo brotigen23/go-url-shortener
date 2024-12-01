@@ -8,7 +8,29 @@ import (
 
 //---------------------- ShortURLs table ----------------------
 
-func (repo PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) { return nil, nil }
+func (repo PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) {
+	ret := []model.ShortURL{}
+	query, err := repo.db.Query(`SELECT * FROM Short_URLs`)
+	if err != nil {
+		return nil, err
+	}
+	var ID int
+	var URL string
+	var Alias string
+	for query.Next() {
+		err = query.Scan(&ID, &URL, &Alias)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, *model.NewShortURL(ID, URL, Alias))
+	}
+	err = query.Err()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return ret, nil
+}
 
 func (repo PostgresRepository) GetShortURLByID(id int) (*model.ShortURL, error) {
 	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE ID = $1`, id)

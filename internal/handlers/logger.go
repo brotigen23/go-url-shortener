@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -48,10 +47,6 @@ func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerF
 			next.ServeHTTP(&lw, r)
 
 			duration := time.Since(start)
-			user, err := r.Cookie("userID")
-			if err != nil {
-				fmt.Println("no userID")
-			}
 			logger.Infoln(
 				"uri", r.RequestURI,
 				"method", r.Method,
@@ -60,7 +55,6 @@ func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerF
 				"size", responseData.size,
 				"encoding", r.Header.Get("Content-Encoding"),
 				"content-type", r.Header.Get("content-type"),
-				"userName", user.Value,
 			)
 		})
 }

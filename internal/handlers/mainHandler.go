@@ -148,12 +148,7 @@ func (handler *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Requ
 // Return URL by Alias
 func (handler *mainHandler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
-	userName, err := r.Cookie("userID")
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-	URL, err := handler.service.GetURL(userName.Value, alias)
+	URL, err := handler.service.GetURL(alias)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		return
