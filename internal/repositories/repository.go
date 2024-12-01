@@ -8,4 +8,8 @@ type Repository interface {
 	GetAll() *[]model.Alias
 	Save(model model.Alias) error
 	Migrate(model []model.Alias)
+	CheckDBConnection() error
+
+
+	Close()
 }
