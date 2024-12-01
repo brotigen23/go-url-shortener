@@ -52,7 +52,11 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 	alias := utils.NewRandomString(service.lengthAlias)
 	shortURL, err := service.repository.SaveShortURL(*model.NewShortURL(0, URL, alias))
 	if err != nil {
-		return "", nil
+		if err.Error() == "URL already exists" {
+			return shortURL.Alias, err
+		} else {
+			return "", nil
+		}
 	}
 	// Create relation User <-> URL
 	_, err = service.repository.SaveUserShortURL(*model.NewUsersShortURLs(0, user.ID, shortURL.ID))

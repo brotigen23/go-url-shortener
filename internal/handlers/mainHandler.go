@@ -76,8 +76,6 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	}
 
 	// ------------------------------- Write response -------------------------------
-	rw.WriteHeader(http.StatusCreated)
-
 	var response []byte
 
 	switch r.Header.Get("content-type") {
@@ -98,6 +96,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+	rw.WriteHeader(http.StatusCreated)
 }
 
 // Store new ShortURLs

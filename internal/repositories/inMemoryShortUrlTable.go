@@ -34,6 +34,12 @@ func (repo *inMemoryRepo) GetShortURLByURL(URL string) (*model.ShortURL, error) 
 }
 
 func (repo *inMemoryRepo) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error) {
+	for _, url := range repo.ShortURLs {
+		if url.URL == ShortURL.URL {
+			return &url, fmt.Errorf("URL already exists")
+		}
+	}
+
 	shortURL := model.NewShortURL(len(repo.ShortURLs), ShortURL.URL, ShortURL.Alias)
 	repo.ShortURLs = append(repo.ShortURLs, *shortURL)
 	return shortURL, nil
