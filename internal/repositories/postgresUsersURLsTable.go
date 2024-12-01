@@ -1,8 +1,6 @@
 package repositories
 
 import (
-	"fmt"
-
 	"github.com/brotigen23/go-url-shortener/internal/model"
 )
 
@@ -39,7 +37,6 @@ func (repo PostgresRepository) GetUsersShortURLSByUserID(userID int) ([]model.Us
 		return nil, err
 	}
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	return ret, nil

@@ -57,6 +57,7 @@ func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerF
 				"duration", duration,
 				"size", responseData.size,
 				"encoding", r.Header.Get("Content-Encoding"),
+				"content-type", r.Header.Get("content-type"),
 			)
 		})
 }

@@ -10,7 +10,6 @@ func (repo *inMemoryRepo) GetAllUsers() ([]model.User, error) { return nil, nil 
 
 func (repo *inMemoryRepo) GetUserByID(ID int) (*model.User, error) {
 	for _, user := range repo.Users {
-		fmt.Println(user)
 		if user.ID == ID {
 			return &user, nil
 		}
@@ -19,7 +18,6 @@ func (repo *inMemoryRepo) GetUserByID(ID int) (*model.User, error) {
 }
 func (repo *inMemoryRepo) GetUserByName(name string) (*model.User, error) {
 	for _, user := range repo.Users {
-		fmt.Println(user)
 		if user.Name == name {
 			return &user, nil
 		}
@@ -29,7 +27,6 @@ func (repo *inMemoryRepo) GetUserByName(name string) (*model.User, error) {
 
 func (repo *inMemoryRepo) SaveUser(User model.User) (*model.User, error) {
 	user := model.NewUser(len(repo.Users), User.Name)
-	fmt.Println(User)
 	repo.Users = append(repo.Users, *user)
 	return user, nil
 }
