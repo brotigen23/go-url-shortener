@@ -47,7 +47,7 @@ func LoadLocalAliases(filePath string) ([]model.ShortURL, error) {
 	return aliases, nil
 }
 
-func Foo(shortRULs []model.ShortURL, users []model.User, userURLs []model.Users_ShortURLs, filePath string) error {
+func Foo(shortRULs []model.ShortURL, users []model.User, userURLs []model.UsersShortURLs, filePath string) error {
 	return nil
 }
 

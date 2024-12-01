@@ -9,14 +9,14 @@ import (
 type inMemoryRepo struct {
 	Users           []model.User
 	ShortURLs       []model.ShortURL
-	Users_ShortURLs []model.Users_ShortURLs
+	Users_ShortURLs []model.UsersShortURLs
 	aliases         []model.ShortURL
 }
 
-func NewInMemoryRepo(shortURLs []model.ShortURL, users []model.User, userURLs []model.Users_ShortURLs) *inMemoryRepo {
+func NewInMemoryRepo(shortURLs []model.ShortURL, users []model.User, userURLs []model.UsersShortURLs) *inMemoryRepo {
 	return &inMemoryRepo{
-		ShortURLs: shortURLs,
-		Users: users,
+		ShortURLs:       shortURLs,
+		Users:           users,
 		Users_ShortURLs: userURLs,
 	}
 }

@@ -1,14 +1,14 @@
 package model
 
 type ShortURL struct {
-	Id    int    `json:"-"`
+	ID    int    `json:"-"`
 	URL   string `json:"original_url"`
 	Alias string `json:"short_url"`
 }
 
 func NewShortURL(id int, url string, alias string) *ShortURL {
 	return &ShortURL{
-		Id:    id,
+		ID:    id,
 		URL:   url,
 		Alias: alias,
 	}

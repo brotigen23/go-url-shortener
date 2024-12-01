@@ -20,7 +20,7 @@ func (repo PostgresRepository) GetShortURLByID(id int) (*model.ShortURL, error) 
 		fmt.Println(err)
 		return nil, err
 	}
-	return &model.ShortURL{Id: ID, URL: URL, Alias: Alias}, nil
+	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias}, nil
 }
 func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL, error) {
 	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE Alias = $1`, alias)
@@ -32,7 +32,7 @@ func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL
 		fmt.Println(err)
 		return nil, err
 	}
-	return &model.ShortURL{Id: ID, URL: URL, Alias: Alias}, nil
+	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias}, nil
 }
 
 func (repo PostgresRepository) GetShortURLByURL(URL string) (*model.ShortURL, error) { return nil, nil }

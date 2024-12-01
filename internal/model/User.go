@@ -1,13 +1,13 @@
 package model
 
 type User struct {
-	Id   int    `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
 func NewUser(id int, name string) *User {
 	return &User{
-		Id:   id,
+		ID:   id,
 		Name: name,
 	}
 }

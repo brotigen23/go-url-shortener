@@ -12,7 +12,6 @@ import (
 
 type ServiceShortener struct {
 	repository  repositories.Repository
-	repo        repositories.Repo
 	lengthAlias int
 }
 
@@ -30,14 +29,14 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 		return "", err
 	}
 	// Get user's URL IDs
-	usersShortURLs, err := service.repository.GetUsersShortURLSByUserID(user.Id)
+	usersShortURLs, err := service.repository.GetUsersShortURLSByUserID(user.ID)
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		return "", err
 	}
 	// Get user's shortURL
 	var urls []*model.ShortURL
 	for _, userShortURL := range usersShortURLs {
-		url, err := service.repository.GetShortURLByID(userShortURL.URL_ID)
+		url, err := service.repository.GetShortURLByID(userShortURL.Url_ID)
 		if err != nil && err.Error() != "sql: no rows in result set" {
 			return "", nil
 		}
@@ -56,7 +55,7 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 		return "", nil
 	}
 	// Create relation User <-> URL
-	_, err = service.repository.SaveUserShortURL(*model.NewUsers_ShortURLs(0, user.Id, shortURL.Id))
+	_, err = service.repository.SaveUserShortURL(*model.NewUsersShortURLs(0, user.ID, shortURL.ID))
 	if err != nil {
 		return "", nil
 	}
@@ -83,14 +82,14 @@ func (service ServiceShortener) GetURL(userName string, alias string) (string, e
 		return "", fmt.Errorf("user not found")
 	}
 	// Get user's URL IDs
-	usersURLID, err := service.repository.GetUsersShortURLSByUserID(user.Id)
+	usersURLID, err := service.repository.GetUsersShortURLSByUserID(user.ID)
 	if err != nil {
 		return "", fmt.Errorf("no saved urls")
 	}
 	// Get user's shortURL
 	var urls []model.ShortURL
 	for _, urlID := range usersURLID {
-		url, err := service.repository.GetShortURLByID(urlID.URL_ID)
+		url, err := service.repository.GetShortURLByID(urlID.Url_ID)
 		if err != nil {
 			return "", err
 		}
@@ -114,14 +113,14 @@ func (service ServiceShortener) GetURLs(userName string) (map[string]string, err
 		return nil, err
 	}
 	// Get user's URL IDs
-	usersURLID, err := service.repository.GetUsersShortURLSByUserID(user.Id)
+	usersURLID, err := service.repository.GetUsersShortURLSByUserID(user.ID)
 	if err != nil {
 		return nil, err
 	}
 	// Get user's shortURL
 	var urls []model.ShortURL
 	for _, urlID := range usersURLID {
-		url, err := service.repository.GetShortURLByID(urlID.URL_ID)
+		url, err := service.repository.GetShortURLByID(urlID.Url_ID)
 		if err != nil {
 			return nil, err
 		}
@@ -134,66 +133,6 @@ func (service ServiceShortener) GetURLs(userName string) (map[string]string, err
 	return ret, nil
 }
 
-// ---------------------------- DEPRECATED ----------------------------
-
-func (service ServiceShortener) GetURLByAlia(userName string, alias string) (string, error) {
-	_, err := service.repository.GetUserByName(userName)
-	if err != nil {
-		return "", err
-	}
-
-	ret, err := service.repository.GetShortURLByAlias(alias)
-	if err != nil {
-		return "", err
-	}
-	fmt.Println(ret)
-	return ret.URL, nil
-}
-
-func (s *ServiceShortener) GetURLByAlias(alias string) (string, error) {
-	ret, err := s.repo.GetByAlias(alias)
-	if err != nil {
-		return "", err
-	}
-	fmt.Println(ret)
-	return ret.URL, nil
-}
-
-func (s *ServiceShortener) GetAliasByURL(url string) (string, error) {
-	ret, err := s.repo.GetByURL(url)
-	if err != nil {
-		return "", err
-	}
-	return ret.Alias, nil
-}
-
-func (s *ServiceShortener) Save(userName string, url string) (string, error) {
-	model := model.NewShortURL(0, url, utils.NewRandomString(s.lengthAlias))
-	//isExists, err := s.repo.GetByURL(url)
-
-	err := s.repo.Save(*model)
-	if err != nil && err.Error() == `pq: duplicate key value violates unique constraint "aliases_url_key"` {
-		model, _ = s.repo.GetByURL(model.URL)
-	}
-	return model.Alias, err
-}
-
-func (s *ServiceShortener) GetAll() *[]model.ShortURL {
-	return s.repo.GetAll()
-}
-
-func (s *ServiceShortener) CheckDBConnection() error {
-	return s.repo.CheckDBConnection()
-}
-
-func (s *ServiceShortener) Close() {
-	s.repo.Close()
-}
-
-func (s *ServiceShortener) SaveUsersURL(userID string, alias string) error {
-	return s.repo.SaveUserURL(userID, alias)
-}
-
-func (s *ServiceShortener) GetUserURL(userID string) ([]model.ShortURL, error) {
-	return s.repo.GetUserURL(userID)
+func (service ServiceShortener) CheckDBConnection() error {
+	return service.repository.CheckDBConnection()
 }

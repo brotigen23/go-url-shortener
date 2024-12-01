@@ -23,7 +23,11 @@ func WithAuth(next http.HandlerFunc, config *config.Config, service *services.Se
 					return
 				}
 				// Сохраняем созданного пользователя
-				service.SaveUser(userName)
+				err = service.SaveUser(userName)
+				if err != nil{
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
 				http.SetCookie(w, &http.Cookie{
 					Name:  "userID",
 					Value: userName,

@@ -44,11 +44,6 @@ func Run(conf *config.Config) error {
 
 	aliases, _ := utils.LoadLocalAliases(conf.FileStoragePath)
 
-	indexHandler, err := handlers.NewIndexHandler(conf, aliases, logger, repository)
-	if err != nil {
-		return err
-	}
-
 	mainHandler, err := handlers.NewMainHandler(conf, aliases, logger, repository)
 	if err != nil {
 		return err
@@ -56,7 +51,9 @@ func Run(conf *config.Config) error {
 
 	//r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.HandleGET), conf, authService), logger.Sugar()))
 	r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURL), conf, authService), logger.Sugar()))
-	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
+	//r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
+	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.Ping), conf, authService), logger.Sugar()))
+
 	//r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
 	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURLs), conf, authService), logger.Sugar()))
 
@@ -98,11 +95,5 @@ func Run(conf *config.Config) error {
 		"server shutdown",
 		"time running", duration,
 	)
-	if conf.DatabaseDSN == "" {
-		err = utils.SaveStorage(indexHandler.GetAliases(), conf.FileStoragePath)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }

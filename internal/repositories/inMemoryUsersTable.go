@@ -11,7 +11,7 @@ func (repo *inMemoryRepo) GetAllUsers() ([]model.User, error) { return nil, nil 
 func (repo *inMemoryRepo) GetUserByID(ID int) (*model.User, error) {
 	for _, user := range repo.Users {
 		fmt.Println(user)
-		if user.Id == ID {
+		if user.ID == ID {
 			return &user, nil
 		}
 	}

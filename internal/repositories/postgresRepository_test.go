@@ -54,9 +54,9 @@ func TestPostgres(t *testing.T) {
 
 	// ------------------------------ USERS_URL ------------------------------
 	for i := range users {
-		userID := users[i].Id
-		shortURLID := shortURLs[i].Id
-		userShortURL := model.NewUsers_ShortURLs(0, userID, shortURLID)
+		userID := users[i].ID
+		shortURLID := shortURLs[i].ID
+		userShortURL := model.NewUsersShortURLs(0, userID, shortURLID)
 		_, err = repository.SaveUserShortURL(*userShortURL)
 		assert.NoError(t, err)
 	}

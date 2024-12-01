@@ -17,7 +17,7 @@ func (repo PostgresRepository) GetUserByName(name string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &model.User{Id: ID, Name: Name}, nil
+	return &model.User{ID: ID, Name: Name}, nil
 }
 
 func (repo PostgresRepository) SaveUser(User model.User) (*model.User, error) {

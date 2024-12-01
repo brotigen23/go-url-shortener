@@ -1,15 +1,15 @@
 package model
 
-type Users_ShortURLs struct {
-	Id      int `json:"ID"`
-	User_ID int `json:"User_ID"`
-	URL_ID  int `json:"URL_ID"`
+type UsersShortURLs struct {
+	ID     int `json:"ID"`
+	UserID int `json:"User_ID"`
+	Url_ID int `json:"URL_ID"`
 }
 
-func NewUsers_ShortURLs(id int, User_ID int, URL_ID int) *Users_ShortURLs{
-	return &Users_ShortURLs{
-		Id: id,
-		User_ID: User_ID,
-		URL_ID: URL_ID,
+func NewUsersShortURLs(id int, UserID int, URLID int) *UsersShortURLs {
+	return &UsersShortURLs{
+		ID:     id,
+		UserID: UserID,
+		Url_ID: URLID,
 	}
 }
