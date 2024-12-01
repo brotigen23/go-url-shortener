@@ -36,7 +36,7 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 	// Get user's shortURL
 	var urls []*model.ShortURL
 	for _, userShortURL := range usersShortURLs {
-		url, err := service.repository.GetShortURLByID(userShortURL.Url_ID)
+		url, err := service.repository.GetShortURLByID(userShortURL.UrlID)
 		if err != nil && err.Error() != "sql: no rows in result set" {
 			return "", nil
 		}
@@ -89,7 +89,7 @@ func (service ServiceShortener) GetURL(userName string, alias string) (string, e
 	// Get user's shortURL
 	var urls []model.ShortURL
 	for _, urlID := range usersURLID {
-		url, err := service.repository.GetShortURLByID(urlID.Url_ID)
+		url, err := service.repository.GetShortURLByID(urlID.UrlID)
 		if err != nil {
 			return "", err
 		}
@@ -120,7 +120,7 @@ func (service ServiceShortener) GetURLs(userName string) (map[string]string, err
 	// Get user's shortURL
 	var urls []model.ShortURL
 	for _, urlID := range usersURLID {
-		url, err := service.repository.GetShortURLByID(urlID.Url_ID)
+		url, err := service.repository.GetShortURLByID(urlID.UrlID)
 		if err != nil {
 			return nil, err
 		}

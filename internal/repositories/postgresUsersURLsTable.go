@@ -35,6 +35,9 @@ func (repo PostgresRepository) GetUsersShortURLSByUserID(userID int) ([]model.Us
 		}
 		ret = append(ret, *model.NewUsersShortURLs(id, UserID, URLID))
 	}
+	if q.Err() != nil {
+		return nil, err
+	}
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -52,9 +55,9 @@ func (repo PostgresRepository) SaveUserShortURL(Users_ShortURLs model.UsersShort
 	var (
 		id int
 	)
-	err := repo.db.QueryRow(query, Users_ShortURLs.UserID, Users_ShortURLs.Url_ID).Scan(&id)
+	err := repo.db.QueryRow(query, Users_ShortURLs.UserID, Users_ShortURLs.UrlID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
-	return model.NewUsersShortURLs(id, Users_ShortURLs.UserID, Users_ShortURLs.Url_ID), nil
+	return model.NewUsersShortURLs(id, Users_ShortURLs.UserID, Users_ShortURLs.UrlID), nil
 }

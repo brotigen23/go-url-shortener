@@ -9,7 +9,7 @@ import (
 type inMemoryRepo struct {
 	Users           []model.User
 	ShortURLs       []model.ShortURL
-	Users_ShortURLs []model.UsersShortURLs
+	UsersShortURLs []model.UsersShortURLs
 	aliases         []model.ShortURL
 }
 
@@ -17,7 +17,7 @@ func NewInMemoryRepo(shortURLs []model.ShortURL, users []model.User, userURLs []
 	return &inMemoryRepo{
 		ShortURLs:       shortURLs,
 		Users:           users,
-		Users_ShortURLs: userURLs,
+		UsersShortURLs: userURLs,
 	}
 }
 
