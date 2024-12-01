@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repositories"
@@ -43,7 +41,6 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 	if err != nil {
 		return "", nil
 	}
-	fmt.Println(shortURL)
 	return shortURL.Alias, nil
 }
 
@@ -107,4 +104,4 @@ func (service ServiceShortener) AllURLs() []model.ShortURL {
 		return nil
 	}
 	return ret
-} 
+}
