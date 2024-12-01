@@ -37,7 +37,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	// ------------------------------- Read request data -------------------------------
 	var URL string
 	switch r.Header.Get("content-type") {
-	case "text/plain":
+	case "text/plain; charset=utf-8":
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
