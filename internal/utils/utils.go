@@ -23,7 +23,7 @@ func NewRandomString(size int) string {
 	return string(b)
 }
 
-func LoadLocalAliases(filePath string) ([]model.ShortURL, error) {
+func LoadStorage(filePath string) ([]model.ShortURL, error) {
 	file, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
@@ -45,10 +45,6 @@ func LoadLocalAliases(filePath string) ([]model.ShortURL, error) {
 		}
 	}
 	return aliases, nil
-}
-
-func Foo(shortRULs []model.ShortURL, users []model.User, userURLs []model.UsersShortURLs, filePath string) error {
-	return nil
 }
 
 func SaveStorage(aliases []model.ShortURL, filePath string) error {

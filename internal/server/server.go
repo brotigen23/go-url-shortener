@@ -42,7 +42,7 @@ func Run(conf *config.Config) error {
 		return err
 	}
 
-	aliases, _ := utils.LoadLocalAliases(conf.FileStoragePath)
+	aliases, _ := utils.LoadStorage(conf.FileStoragePath)
 
 	mainHandler, err := handlers.NewMainHandler(conf, aliases, logger, repository)
 	if err != nil {
@@ -95,5 +95,13 @@ func Run(conf *config.Config) error {
 		"server shutdown",
 		"time running", duration,
 	)
+	shortURLs, err := repository.GetAllShortURL()
+	if err != nil {
+		return err
+	}
+	err = utils.SaveStorage(shortURLs, conf.FileStoragePath)
+	if err != nil {
+		return err
+	}
 	return nil
 }

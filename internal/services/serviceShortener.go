@@ -14,6 +14,9 @@ type ServiceShortener struct {
 }
 
 func NewService(config *config.Config, lengthAlias int, a []model.ShortURL, logger *zap.Logger, repository repositories.Repository) (*ServiceShortener, error) {
+	for _, url := range a {
+		repository.SaveShortURL(url)
+	}
 	return &ServiceShortener{
 		repository:  repository,
 		lengthAlias: lengthAlias,
