@@ -63,6 +63,7 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 	if err != nil {
 		return "", nil
 	}
+	fmt.Println(shortURL)
 	return shortURL.Alias, nil
 }
 
@@ -80,7 +81,7 @@ func (service ServiceShortener) SaveURLs(userName string, URLs []string) (map[st
 }
 
 func (service ServiceShortener) GetURL(alias string) (string, error) {
-
+	fmt.Println(service.repository.GetAllShortURL())
 	ret, err := service.repository.GetShortURLByAlias(alias)
 	if err != nil {
 		return "", err

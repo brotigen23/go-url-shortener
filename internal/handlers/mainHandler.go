@@ -37,7 +37,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	// ------------------------------- Read request data -------------------------------
 	var URL string
 	switch r.Header.Get("content-type") {
-	case "text/plain; charset=utf-8":
+	case "text/plain; charset=utf-8", "test/plain":
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -91,12 +91,12 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 			return
 		}
 	}
+	rw.WriteHeader(http.StatusCreated)
 	_, err = rw.Write(response)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
-	rw.WriteHeader(http.StatusCreated)
 }
 
 // Store new ShortURLs
