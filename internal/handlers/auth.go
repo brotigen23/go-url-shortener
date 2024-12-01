@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
@@ -11,7 +10,6 @@ import (
 func WithAuth(next http.HandlerFunc, config *config.Config, service *services.ServiceAuth) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("MDDFE")
 			// Считываем значение
 			userID, err := r.Cookie("userID")
 			switch err {
@@ -24,7 +22,7 @@ func WithAuth(next http.HandlerFunc, config *config.Config, service *services.Se
 				}
 				// Сохраняем созданного пользователя
 				err = service.SaveUser(userName)
-				if err != nil{
+				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}

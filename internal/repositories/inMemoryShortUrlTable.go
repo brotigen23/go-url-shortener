@@ -6,7 +6,9 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
 )
 
-func (repo *inMemoryRepo) GetAllShortURL() ([]model.ShortURL, error) { return nil, nil }
+func (repo *inMemoryRepo) GetAllShortURL() ([]model.ShortURL, error) {
+	return repo.ShortURLs, nil
+}
 
 func (repo *inMemoryRepo) GetShortURLByID(id int) (*model.ShortURL, error) {
 	for _, shortURL := range repo.ShortURLs {

@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -57,6 +58,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 			return
 		}
 		URL = request.URL
+		fmt.Println(handler.service.AllURLs())
 	}
 
 	// ------------------------------- Save URL -------------------------------

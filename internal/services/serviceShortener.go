@@ -61,14 +61,11 @@ func (service ServiceShortener) SaveURLs(userName string, URLs []string) (map[st
 }
 
 func (service ServiceShortener) GetURL(alias string) (string, error) {
-	fmt.Println(service.repository.GetAllShortURL())
 	ret, err := service.repository.GetShortURLByAlias(alias)
 	if err != nil {
 		return "", err
 	}
-
 	return ret.URL, nil
-
 }
 
 func (service ServiceShortener) GetURLs(userName string) (map[string]string, error) {
@@ -103,3 +100,11 @@ func (service ServiceShortener) GetURLs(userName string) (map[string]string, err
 func (service ServiceShortener) CheckDBConnection() error {
 	return service.repository.CheckDBConnection()
 }
+
+func (service ServiceShortener) AllURLs() []model.ShortURL {
+	ret, err := service.repository.GetAllShortURL()
+	if err != nil {
+		return nil
+	}
+	return ret
+} 
