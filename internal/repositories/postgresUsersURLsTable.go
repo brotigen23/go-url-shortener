@@ -50,14 +50,14 @@ func (repo PostgresRepository) GetUsersShortURLSByURLID(urlID int) (*model.Users
 	return nil, nil
 }
 
-func (repo PostgresRepository) SaveUserShortURL(Users_ShortURLs model.UsersShortURLs) (*model.UsersShortURLs, error) {
+func (repo PostgresRepository) SaveUserShortURL(UsersShortURLs model.UsersShortURLs) (*model.UsersShortURLs, error) {
 	query := "INSERT INTO Users_URLs(User_ID, URL_ID) VALUES($1, $2) RETURNING ID"
 	var (
 		id int
 	)
-	err := repo.db.QueryRow(query, Users_ShortURLs.UserID, Users_ShortURLs.UrlID).Scan(&id)
+	err := repo.db.QueryRow(query, UsersShortURLs.UserID, UsersShortURLs.URLID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
-	return model.NewUsersShortURLs(id, Users_ShortURLs.UserID, Users_ShortURLs.UrlID), nil
+	return model.NewUsersShortURLs(id, UsersShortURLs.UserID, UsersShortURLs.URLID), nil
 }
