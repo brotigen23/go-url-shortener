@@ -81,8 +81,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	var response []byte
 
 	switch r.Header.Get("content-type") {
-	case "text/plain":
-		rw.Header().Set("content-type", "text/plain")
+	case "text/plain; charset=utf-8":
 		response = []byte(handler.config.BaseURL + "/" + alias)
 	case "application/json":
 		result := dto.NewAPIShortenResponse(handler.config.BaseURL + "/" + alias)
