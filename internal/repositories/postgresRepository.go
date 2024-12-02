@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 
+	"github.com/brotigen23/go-url-shortener/internal/db/migration"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -21,7 +22,7 @@ func NewPostgresRepository(driver string, stringConnection string, logger *zap.L
 		return nil, err
 	}
 	ret.db = db
-	//migration.MigratePostgres(db)
+	migration.MigratePostgresUp(db)
 	return ret, nil
 }
 
