@@ -175,6 +175,7 @@ func (handler *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request
 	userName, err := r.Cookie("userID")
 	if userName.Value == "" {
 		rw.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
