@@ -19,6 +19,7 @@ func (repo *inMemoryRepo) GetUserByID(ID int) (*model.User, error) {
 func (repo *inMemoryRepo) GetUserByName(name string) (*model.User, error) {
 	for _, user := range repo.Users {
 		if user.Name == name {
+			fmt.Println("USER FOUND: ", user)
 			return &user, nil
 		}
 	}

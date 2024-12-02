@@ -4,7 +4,6 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
-	"fmt"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
@@ -42,7 +41,6 @@ func NewServiceAuth(config *config.Config, repository repositories.Repository) (
 }
 
 func (s *ServiceAuth) SaveUser(userName string) error {
-	fmt.Println(userName)
 	_, err := s.repo.SaveUser(*model.NewUser(0, userName))
 	return err
 }
