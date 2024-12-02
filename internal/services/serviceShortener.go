@@ -58,8 +58,10 @@ func (service ServiceShortener) SaveURLs(userName string, URLs []string) (map[st
 		if err != nil {
 			if err.Error() == "URL already exists" {
 				return nil, err
+			} else {
+				return nil, err
 			}
-			return nil, err
+
 		}
 		ret[url] = shortURL
 	}

@@ -134,7 +134,7 @@ func (handler *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Requ
 		}
 	}
 	for i := range request {
-		BatchResponse = append(BatchResponse, dto.NewAPIBatchResponse(request[i].ID, shortURLs[request[i].URL]))
+		BatchResponse = append(BatchResponse, dto.NewAPIBatchResponse(request[i].ID, handler.config.BaseURL+"/"+shortURLs[request[i].URL]))
 	}
 	// Заголовки и статус ответа
 	rw.Header().Set("content-type", "application/json")
