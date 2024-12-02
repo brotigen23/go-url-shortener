@@ -69,7 +69,7 @@ func (handler *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Reque
 	}
 	alias, err := handler.service.SaveURL(userName.Value, URL)
 	if err != nil {
-		if err.Error() == "URL already exists" {
+		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -126,7 +126,7 @@ func (handler *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Requ
 	}
 	shortURLs, err := handler.service.SaveURLs(userName.Value, URLs)
 	if err != nil {
-		if err.Error() == "URL already exists" {
+		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)

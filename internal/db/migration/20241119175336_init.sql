@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 CREATE TABLE Short_URLs(
     ID SERIAL PRIMARY KEY,
-    URL VARCHAR, 
-    Alias VARCHAR UNIQUE
+    URL VARCHAR UNIQUE, 
+    Alias VARCHAR
 );
 CREATE TABLE Users(
     ID SERIAL PRIMARY KEY, 

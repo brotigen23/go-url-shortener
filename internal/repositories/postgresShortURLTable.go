@@ -57,23 +57,35 @@ func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL
 	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias}, nil
 }
 
-func (repo PostgresRepository) GetShortURLByURL(URL string) (*model.ShortURL, error) { return nil, nil }
-
-func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error) {
-	var count int
-	err := repo.db.QueryRow("SELECT COUNT(*) FROM Short_URLs WHERE URL = $1", ShortURL.URL).Scan(&count)
+func (repo PostgresRepository) GetShortURLByURL(url string) (*model.ShortURL, error) {
+	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE URL = $1`, url)
+	var ID int
+	var URL string
+	var Alias string
+	err := query.Scan(&ID, &URL, &Alias)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
-	if count > 0 {
-		return &ShortURL, fmt.Errorf("URL already exists")
-	}
+	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias}, nil
+
+}
+
+func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error) {
 	query := "INSERT INTO Short_URLs(URL, Alias) VALUES($1, $2) RETURNING ID"
 	var (
 		id int
 	)
-	err = repo.db.QueryRow(query, ShortURL.URL, ShortURL.Alias).Scan(&id)
+	err := repo.db.QueryRow(query, ShortURL.URL, ShortURL.Alias).Scan(&id)
 	if err != nil {
+		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
+			ret, e := repo.GetShortURLByURL(ShortURL.URL)
+			if e != nil {
+				return nil, e
+			}
+			return ret, err
+		}
+		fmt.Println(err.Error())
 		return nil, err
 	}
 	return model.NewShortURL(id, ShortURL.URL, ShortURL.Alias), nil

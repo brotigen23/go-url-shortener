@@ -36,7 +36,7 @@ func (service ServiceShortener) SaveURL(userName string, URL string) (string, er
 	alias := utils.NewRandomString(service.lengthAlias)
 	shortURL, err := service.repository.SaveShortURL(*model.NewShortURL(0, URL, alias))
 	if err != nil {
-		if err.Error() == "URL already exists" {
+		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
 			return shortURL.Alias, err
 		} else {
 			return "", nil
