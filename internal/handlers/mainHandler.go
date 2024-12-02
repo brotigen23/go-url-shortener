@@ -240,7 +240,7 @@ func (handler *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusNoContent)
 		return
 	}
-
+	fmt.Println(request)
 	err = handler.service.DeleteURLs(userName.Value, request)
 	if err != nil {
 		log.Println(err.Error())

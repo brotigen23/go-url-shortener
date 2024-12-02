@@ -106,9 +106,5 @@ func (repo PostgresRepository) DeleteShortURLByAliases(Aliases []string) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.db.Exec("DELETE FROM Short_URLs WHERE Alias IN ($1)", aliases)
-	if err != nil {
-		return err
-	}
 	return err
 }
