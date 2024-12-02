@@ -173,6 +173,9 @@ func (handler *mainHandler) GetShortURL(rw http.ResponseWriter, r *http.Request)
 // Return all user's URLs
 func (handler *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 	userName, err := r.Cookie("userID")
+	if userName.Value == "" {
+		rw.WriteHeader(http.StatusUnauthorized)
+	}
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
@@ -186,7 +189,7 @@ func (handler *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request
 	}
 	batchResponse := []dto.APIUserURLs{}
 	for key, value := range URLs {
-		batchResponse = append(batchResponse, *dto.NewAPIUserURLs(key, value))
+		batchResponse = append(batchResponse, *dto.NewAPIUserURLs(key, handler.config.BaseURL+"/"+value))
 	}
 	// Заголовки и статус ответа
 	rw.Header().Set("content-type", "application/json")
