@@ -42,6 +42,8 @@ func WithAuth(next http.HandlerFunc, config *config.Config, service *services.Se
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
+				w.WriteHeader(http.StatusUnauthorized)
+				return
 			case nil:
 				if userID.Value == "" {
 					http.Error(w, "unauthorized", http.StatusUnauthorized)
