@@ -47,3 +47,6 @@ func (repo *inMemoryRepo) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL
 	repo.ShortURLs = append(repo.ShortURLs, *shortURL)
 	return shortURL, nil
 }
+
+func (repo *inMemoryRepo) DeleteShortURLByAlias(Alias string) error       { return nil }
+func (repo *inMemoryRepo) DeleteShortURLByAliases(Aliases []string) error { return nil }

@@ -9,6 +9,9 @@ type ShortURLs interface {
 	GetShortURLByAlias(alias string) (*model.ShortURL, error)
 	GetShortURLByURL(URL string) (*model.ShortURL, error)
 
+	DeleteShortURLByAlias(Alias string) error
+	DeleteShortURLByAliases(Aliases []string) error
+
 	SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error)
 }
 

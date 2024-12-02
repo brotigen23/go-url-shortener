@@ -56,6 +56,7 @@ func Run(conf *config.Config) error {
 
 	//r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
 	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURLs), conf, authService), logger.Sugar()))
+	r.Delete("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.Detele), conf, authService), logger.Sugar()))
 
 	//r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOST), conf, authService), logger.Sugar()))
 	r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))

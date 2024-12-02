@@ -105,6 +105,22 @@ func (service ServiceShortener) GetURLs(userName string) (map[string]string, err
 	return ret, nil
 }
 
+func (service ServiceShortener) DeleteURLs(userName string, aliases []string) error {
+	err := service.repository.DeleteShortURLByAliases(aliases)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service ServiceShortener) IsDeleted(URL string) (bool, error) {
+	d, err := service.repository.GetShortURLByURL(URL)
+	if err != nil{
+		return false, err
+	}
+	return d.IsDeleted, nil
+}
+
 func (service ServiceShortener) CheckDBConnection() error {
 	return service.repository.CheckDBConnection()
 }

@@ -166,6 +166,15 @@ func (handler *mainHandler) GetShortURL(rw http.ResponseWriter, r *http.Request)
 		rw.WriteHeader(http.StatusNotFound)
 		return
 	}
+	isDeleted, err := handler.service.IsDeleted(URL)
+	if err != nil {
+		rw.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if isDeleted {
+		rw.WriteHeader(http.StatusGone)
+		return
+	}
 	rw.Header().Set("location", URL)
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }
@@ -176,7 +185,6 @@ func (handler *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
-	fmt.Println(userName.Value)
 	URLs, err := handler.service.GetURLs(userName.Value)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -203,6 +211,39 @@ func (handler *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
 	rw.WriteHeader(http.StatusOK)
+}
+
+func (handler *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
+	request := []string{}
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = json.Unmarshal(buf.Bytes(), &request); err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	userName, err := r.Cookie("userID")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+	URLs, err := handler.service.GetURLs(userName.Value)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+	if len(URLs) == 0 {
+		rw.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	err = handler.service.DeleteURLs(userName.Value, request)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	rw.WriteHeader(http.StatusAccepted)
 }
 
 func (handler *mainHandler) Ping(rw http.ResponseWriter, r *http.Request) {

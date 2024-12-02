@@ -90,3 +90,14 @@ func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.Sho
 	}
 	return model.NewShortURL(id, ShortURL.URL, ShortURL.Alias), nil
 }
+
+func (repo PostgresRepository) DeleteShortURLByAlias(Alias string) error { return nil }
+
+func (repo PostgresRepository) DeleteShortURLByAliases(Aliases []string) error {
+	query := "UPDATE Short_URLs SET Is_Deleted = TRUE WHERE Alias in ($1) "
+	err := repo.db.QueryRow(query, Aliases).Err()
+	if err != nil {
+		return err
+	}
+	return err
+}
