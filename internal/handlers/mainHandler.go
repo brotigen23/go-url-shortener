@@ -176,6 +176,7 @@ func (handler *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
+	fmt.Println(userName.Value)
 	URLs, err := handler.service.GetURLs(userName.Value)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)

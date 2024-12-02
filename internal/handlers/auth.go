@@ -29,11 +29,12 @@ func WithAuth(next http.HandlerFunc, config *config.Config, service *services.Se
 				http.SetCookie(w, &http.Cookie{
 					Name:  "userID",
 					Value: userName,
-					Path:  "/",
+					Path:  "/api/user/urls",
 				})
 				r.AddCookie(&http.Cookie{
 					Name:  "userID",
 					Value: userName,
+					Path:  "/api/user/urls",
 				})
 				// Подписываем нового пользователя
 				err = service.SignUser(userName)
