@@ -16,9 +16,11 @@ func (repo PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) {
 	}
 	var ID int
 	var URL string
-	var Alias string
+	var Alias string	
+	var IsDeleted bool
+
 	for query.Next() {
-		err = query.Scan(&ID, &URL, &Alias)
+		err := query.Scan(&ID, &URL, &Alias, &IsDeleted)
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +39,8 @@ func (repo PostgresRepository) GetShortURLByID(id int) (*model.ShortURL, error) 
 	var ID int
 	var URL string
 	var Alias string
-	err := query.Scan(&ID, &URL, &Alias)
+	var IsDeleted bool
+	err := query.Scan(&ID, &URL, &Alias, &IsDeleted)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -49,7 +52,8 @@ func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL
 	var ID int
 	var URL string
 	var Alias string
-	err := query.Scan(&ID, &URL, &Alias)
+	var IsDeleted bool
+	err := query.Scan(&ID, &URL, &Alias, &IsDeleted)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -62,7 +66,8 @@ func (repo PostgresRepository) GetShortURLByURL(url string) (*model.ShortURL, er
 	var ID int
 	var URL string
 	var Alias string
-	err := query.Scan(&ID, &URL, &Alias)
+	var IsDeleted bool
+	err := query.Scan(&ID, &URL, &Alias, &IsDeleted)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
