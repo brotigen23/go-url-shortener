@@ -29,6 +29,7 @@ func WithAuth(next http.HandlerFunc, config *config.Config, service *services.Se
 				http.SetCookie(w, &http.Cookie{
 					Name:  "userID",
 					Value: userName,
+					Path:  "/",
 				})
 				r.AddCookie(&http.Cookie{
 					Name:  "userID",
