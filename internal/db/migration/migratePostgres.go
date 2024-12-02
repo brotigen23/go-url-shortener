@@ -7,8 +7,13 @@ import (
 	"github.com/pressly/goose"
 )
 
-func MigratePostgres(db *sql.DB) {
-	if err := goose.Run("up", db, "./internal/db/migration", "up"); err != nil {
+func MigratePostgresUp(db *sql.DB) {
+	if err := goose.Run("up", db, "./internal/db/migration"); err != nil {
+		log.Fatalf("goose error: %v", err)
+	}
+}
+func MigratePostgresDown(db *sql.DB) {
+	if err := goose.Run("down", db, "./internal/db/migration"); err != nil {
 		log.Fatalf("goose error: %v", err)
 	}
 }

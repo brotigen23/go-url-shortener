@@ -1,1 +1,0 @@
-make DATABASE_DSN="host=localhost port=5432 user=myuser password=1234 dbname=mydb sslmode=disable" migrate
