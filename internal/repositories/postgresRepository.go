@@ -22,7 +22,6 @@ func NewPostgresRepository(driver string, stringConnection string, logger *zap.L
 		return nil, err
 	}
 	ret.db = db
-	migration.MigratePostgresDown(db)
 	migration.MigratePostgresUp(db)
 	return ret, nil
 }
