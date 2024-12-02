@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"fmt"
+
 	"github.com/brotigen23/go-url-shortener/internal/model"
 )
 
@@ -10,6 +12,7 @@ func (repo PostgresRepository) GetAllUsers() ([]model.User, error) { return nil,
 
 func (repo PostgresRepository) GetUserByID(ID int) (*model.User, error) { return nil, nil }
 func (repo PostgresRepository) GetUserByName(name string) (*model.User, error) {
+	fmt.Println(name)
 	query := repo.db.QueryRow(`SELECT * FROM Users WHERE Name = $1`, name)
 	var ID int
 	var Name string

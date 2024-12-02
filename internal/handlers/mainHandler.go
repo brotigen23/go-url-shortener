@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
@@ -228,10 +229,12 @@ func (handler *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
 	userName, err := r.Cookie("userID")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
 	}
 	URLs, err := handler.service.GetURLs(userName.Value)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
 	}
 	if len(URLs) == 0 {
 		rw.WriteHeader(http.StatusNoContent)
@@ -240,6 +243,7 @@ func (handler *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
 
 	err = handler.service.DeleteURLs(userName.Value, request)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}

@@ -115,7 +115,7 @@ func (service ServiceShortener) DeleteURLs(userName string, aliases []string) er
 
 func (service ServiceShortener) IsDeleted(URL string) (bool, error) {
 	d, err := service.repository.GetShortURLByURL(URL)
-	if err != nil{
+	if err != nil {
 		return false, err
 	}
 	return d.IsDeleted, nil

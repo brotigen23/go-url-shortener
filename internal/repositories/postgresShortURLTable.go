@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
 )
@@ -16,7 +17,7 @@ func (repo PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) {
 	}
 	var ID int
 	var URL string
-	var Alias string	
+	var Alias string
 	var IsDeleted bool
 
 	for query.Next() {
@@ -99,8 +100,9 @@ func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.Sho
 func (repo PostgresRepository) DeleteShortURLByAlias(Alias string) error { return nil }
 
 func (repo PostgresRepository) DeleteShortURLByAliases(Aliases []string) error {
+	aliases := strings.Join(Aliases[:], ",")
 	query := "UPDATE Short_URLs SET Is_Deleted = TRUE WHERE Alias in ($1) "
-	err := repo.db.QueryRow(query, Aliases).Err()
+	err := repo.db.QueryRow(query, aliases).Err()
 	if err != nil {
 		return err
 	}
