@@ -15,7 +15,10 @@ type ServiceShortener struct {
 
 func NewService(config *config.Config, lengthAlias int, a []model.ShortURL, logger *zap.Logger, repository repositories.Repository) (*ServiceShortener, error) {
 	for _, url := range a {
-		repository.SaveShortURL(url)
+		_, err := repository.SaveShortURL(url)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &ServiceShortener{
 		repository:  repository,
@@ -53,6 +56,9 @@ func (service ServiceShortener) SaveURLs(userName string, URLs []string) (map[st
 	for _, url := range URLs {
 		shortURL, err := service.SaveURL(userName, url)
 		if err != nil {
+			if err.Error() == "URL already exists" {
+				return nil, err
+			}
 			return nil, err
 		}
 		ret[url] = shortURL

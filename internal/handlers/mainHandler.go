@@ -126,7 +126,12 @@ func (handler *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Requ
 	}
 	shortURLs, err := handler.service.SaveURLs(userName.Value, URLs)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+		if err.Error() == "URL already exists" {
+			rw.WriteHeader(http.StatusConflict)
+		} else {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 	for i := range request {
 		BatchResponse = append(BatchResponse, dto.NewAPIBatchResponse(request[i].ID, shortURLs[request[i].URL]))

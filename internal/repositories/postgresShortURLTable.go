@@ -60,11 +60,19 @@ func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL
 func (repo PostgresRepository) GetShortURLByURL(URL string) (*model.ShortURL, error) { return nil, nil }
 
 func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error) {
+	var count int
+	err := repo.db.QueryRow("SELECT COUNT(*) FROM Short_URLs WHERE URL = $1", ShortURL.URL).Scan(&count)
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return &ShortURL, fmt.Errorf("URL already exists")
+	}
 	query := "INSERT INTO Short_URLs(URL, Alias) VALUES($1, $2) RETURNING ID"
 	var (
 		id int
 	)
-	err := repo.db.QueryRow(query, ShortURL.URL, ShortURL.Alias).Scan(&id)
+	err = repo.db.QueryRow(query, ShortURL.URL, ShortURL.Alias).Scan(&id)
 	if err != nil {
 		return nil, err
 	}

@@ -42,9 +42,9 @@ func Run(conf *config.Config) error {
 		return err
 	}
 
-	aliases, _ := utils.LoadStorage(conf.FileStoragePath)
+	//aliases, _ := utils.LoadStorage(conf.FileStoragePath)
 
-	mainHandler, err := handlers.NewMainHandler(conf, aliases, logger, repository)
+	mainHandler, err := handlers.NewMainHandler(conf, nil, logger, repository)
 	if err != nil {
 		return err
 	}
