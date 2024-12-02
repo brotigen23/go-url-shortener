@@ -101,8 +101,12 @@ func (repo PostgresRepository) DeleteShortURLByAlias(Alias string) error { retur
 
 func (repo PostgresRepository) DeleteShortURLByAliases(Aliases []string) error {
 	aliases := strings.Join(Aliases[:], ",")
-	query := "UPDATE Short_URLs SET Is_Deleted = TRUE WHERE Alias in ($1) "
+	query := "UPDATE Short_URLs SET Is_Deleted = TRUE WHERE Alias IN ($1) "
 	err := repo.db.QueryRow(query, aliases).Err()
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec("DELETE FROM Short_URLs WHERE Alias IN ($1)", aliases)
 	if err != nil {
 		return err
 	}
