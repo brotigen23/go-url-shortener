@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repositories"
@@ -113,11 +115,12 @@ func (service ServiceShortener) DeleteURLs(userName string, aliases []string) er
 	return nil
 }
 
-func (service ServiceShortener) IsDeleted(URL string) (bool, error) {
-	d, err := service.repository.GetShortURLByURL(URL)
+func (service ServiceShortener) IsDeleted(alias string) (bool, error) {
+	d, err := service.repository.GetShortURLByAlias(alias)
 	if err != nil {
 		return false, err
 	}
+	fmt.Println(d)
 	return d.IsDeleted, nil
 }
 

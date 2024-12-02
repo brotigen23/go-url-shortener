@@ -167,7 +167,7 @@ func (handler *mainHandler) GetShortURL(rw http.ResponseWriter, r *http.Request)
 		rw.WriteHeader(http.StatusNotFound)
 		return
 	}
-	isDeleted, err := handler.service.IsDeleted(URL)
+	isDeleted, err := handler.service.IsDeleted(alias)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		return

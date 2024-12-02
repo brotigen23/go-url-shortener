@@ -59,7 +59,7 @@ func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL
 		fmt.Println(err)
 		return nil, err
 	}
-	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias}, nil
+	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias, IsDeleted: IsDeleted}, nil
 }
 
 func (repo PostgresRepository) GetShortURLByURL(url string) (*model.ShortURL, error) {
