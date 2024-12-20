@@ -1,8 +1,5 @@
 package handlers
 
-//    Сведения о запросах должны содержать URI, метод запроса и время, затраченное на его выполнение.
-//    Сведения об ответах должны содержать код статуса и размер содержимого ответа.
-
 import (
 	"net/http"
 	"time"
@@ -57,6 +54,7 @@ func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerF
 				"duration", duration,
 				"size", responseData.size,
 				"encoding", r.Header.Get("Content-Encoding"),
+				"content-type", r.Header.Get("content-type"),
 			)
 		})
 }
