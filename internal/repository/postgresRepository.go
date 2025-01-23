@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import (
 	"database/sql"
@@ -22,9 +22,15 @@ func NewPostgresRepository(driver string, stringConnection string, logger *zap.L
 		return nil, err
 	}
 	ret.db = db
-	migration.MigratePostgresUp(db)
 	return ret, nil
 }
 
-func (repo PostgresRepository) CheckDBConnection() error { return repo.db.Ping() }
-func (repo PostgresRepository) Close() error             { return repo.db.Close() }
+func (r PostgresRepository) CheckDBConnection() error { return r.db.Ping() }
+func (r PostgresRepository) Close() error             { return r.db.Close() }
+
+func Migrate(r *PostgresRepository) error {
+	return migration.MigratePostgresUp(r.db)
+}
+func Reset(r *PostgresRepository) error {
+	return migration.Reset(r.db)
+}

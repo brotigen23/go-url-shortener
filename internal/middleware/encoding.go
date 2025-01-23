@@ -1,73 +1,11 @@
-package handlers
+package middleware
 
 import (
 	"compress/gzip"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
 )
-
-type gzipWriter struct {
-	http.ResponseWriter
-	Writer io.Writer
-}
-
-func (w gzipWriter) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
-}
-
-func WithZip(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			next.ServeHTTP(w, r)
-			return
-		}
-		//body, _ := io.ReadAll(r.Body)
-		//fmt.Println(string(body))
-		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadGateway)
-			return
-		}
-		defer gz.Close()
-
-		w.Header().Set("Content-Encoding", "gzip")
-		next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
-	})
-}
-func WithUnzip(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Encoding") != "gzip" {
-			fmt.Println("SKIP UNZIP")
-			next.ServeHTTP(w, r)
-			return
-		}
-		gz, err := gzip.NewReader(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer gz.Close()
-
-		// при чтении вернётся распакованный слайс байт
-		body, err := io.ReadAll(gz)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		fmt.Println("РАСПАКОВКА")
-		fmt.Fprintf(w, "Length: %d", len(body))
-		/*
-			fmt.Println("NO SKIP UNZIP")
-			r.Body, _ = utils.UnzipReader(r.Body)
-			url, _ := io.ReadAll(r.Body)
-			fmt.Println("BODY", string(url))
-			next.ServeHTTP(w, r)
-		*/
-		next.ServeHTTP(w, r)
-	})
-}
 
 // compressWriter реализует интерфейс http.ResponseWriter и позволяет прозрачно для сервера
 // сжимать передаваемые данные и выставлять правильные HTTP-заголовки
@@ -133,8 +71,8 @@ func (c *compressReader) Close() error {
 	return c.zr.Close()
 }
 
-func GzipMiddleware(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func Encoding(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ow := w
 
 		// проверяем, что клиент умеет получать от сервера сжатые данные в формате gzip
@@ -165,5 +103,5 @@ func GzipMiddleware(h http.HandlerFunc) http.HandlerFunc {
 		}
 
 		h.ServeHTTP(ow, r)
-	}
+	})
 }

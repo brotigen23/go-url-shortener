@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import (
 	"fmt"
@@ -9,9 +9,9 @@ import (
 
 //---------------------- ShortURLs table ----------------------
 
-func (repo PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) {
+func (r PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) {
 	ret := []model.ShortURL{}
-	query, err := repo.db.Query(`SELECT * FROM Short_URLs`)
+	query, err := r.db.Query(`SELECT * FROM Short_URLs`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +35,8 @@ func (repo PostgresRepository) GetAllShortURL() ([]model.ShortURL, error) {
 	return ret, nil
 }
 
-func (repo PostgresRepository) GetShortURLByID(id int) (*model.ShortURL, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE ID = $1`, id)
+func (r PostgresRepository) GetShortURLByID(id int) (*model.ShortURL, error) {
+	query := r.db.QueryRow(`SELECT * FROM Short_URLs WHERE ID = $1`, id)
 	var ID int
 	var URL string
 	var Alias string
@@ -48,8 +48,8 @@ func (repo PostgresRepository) GetShortURLByID(id int) (*model.ShortURL, error) 
 	}
 	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias}, nil
 }
-func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE Alias = $1`, alias)
+func (r PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL, error) {
+	query := r.db.QueryRow(`SELECT * FROM Short_URLs WHERE Alias = $1`, alias)
 	var ID int
 	var URL string
 	var Alias string
@@ -62,8 +62,8 @@ func (repo PostgresRepository) GetShortURLByAlias(alias string) (*model.ShortURL
 	return &model.ShortURL{ID: ID, URL: URL, Alias: Alias, IsDeleted: IsDeleted}, nil
 }
 
-func (repo PostgresRepository) GetShortURLByURL(url string) (*model.ShortURL, error) {
-	query := repo.db.QueryRow(`SELECT * FROM Short_URLs WHERE URL = $1`, url)
+func (r PostgresRepository) GetShortURLByURL(url string) (*model.ShortURL, error) {
+	query := r.db.QueryRow(`SELECT * FROM Short_URLs WHERE URL = $1`, url)
 	var ID int
 	var URL string
 	var Alias string
@@ -77,15 +77,15 @@ func (repo PostgresRepository) GetShortURLByURL(url string) (*model.ShortURL, er
 
 }
 
-func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error) {
+func (r PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.ShortURL, error) {
 	query := "INSERT INTO Short_URLs(URL, Alias) VALUES($1, $2) RETURNING ID"
 	var (
 		id int
 	)
-	err := repo.db.QueryRow(query, ShortURL.URL, ShortURL.Alias).Scan(&id)
+	err := r.db.QueryRow(query, ShortURL.URL, ShortURL.Alias).Scan(&id)
 	if err != nil {
 		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
-			ret, e := repo.GetShortURLByURL(ShortURL.URL)
+			ret, e := r.GetShortURLByURL(ShortURL.URL)
 			if e != nil {
 				return nil, e
 			}
@@ -97,15 +97,15 @@ func (repo PostgresRepository) SaveShortURL(ShortURL model.ShortURL) (*model.Sho
 	return model.NewShortURL(id, ShortURL.URL, ShortURL.Alias), nil
 }
 
-func (repo PostgresRepository) DeleteShortURLByAlias(Alias string) error { return nil }
+func (r PostgresRepository) DeleteShortURLByAlias(Alias string) error { return nil }
 
-func (repo PostgresRepository) DeleteShortURLByAliases(Aliases []string) error {
+func (r PostgresRepository) DeleteShortURLByAliases(Aliases []string) error {
 	for i := range Aliases {
 		Aliases[i] = `'` + Aliases[i] + `'`
 	}
 	aliases := strings.Join(Aliases[:], ",")
 	query := fmt.Sprintf("UPDATE Short_URLs SET Is_Deleted = TRUE WHERE Alias IN (%s) ", aliases)
-	err := repo.db.QueryRow(query).Err()
+	err := r.db.QueryRow(query).Err()
 	if err != nil {
 		fmt.Println(err.Error())
 		return err

@@ -4,73 +4,85 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
-	"github.com/brotigen23/go-url-shortener/internal/handlers"
-	"github.com/brotigen23/go-url-shortener/internal/repositories"
-	"github.com/brotigen23/go-url-shortener/internal/services"
+	"github.com/brotigen23/go-url-shortener/internal/handler"
+	"github.com/brotigen23/go-url-shortener/internal/middleware"
+	"github.com/brotigen23/go-url-shortener/internal/repository"
+	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func Run(conf *config.Config) error {
-	logger, err := zap.NewDevelopment()
-	var repository repositories.Repository
-	if conf.DatabaseDSN != "" {
-		repository, err = repositories.NewPostgresRepository("postgres", conf.DatabaseDSN, logger)
+func Run(config *config.Config) error {
+	// Init
+	//Logger
+	logConf := zap.NewDevelopmentConfig()
+	logConf.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	logger, err := logConf.Build()
+	if err != nil {
+		return err
+	}
+
+	logger.Info("Now logs should be colored")
+	var repo repository.Repository
+	// Repo
+	switch config.DatabaseDSN {
+	case "":
+		repo = repository.NewInMemoryRepo(nil, nil, nil)
+	default:
+		repo, err = repository.NewPostgresRepository("postgres", config.DatabaseDSN, logger)
 		if err != nil {
 			return err
 		}
-	} else {
-		repository = repositories.NewInMemoryRepo(nil, nil, nil)
 	}
+	// Services
 
+	serviceShortener, err := service.NewServiceShortener(config, 8, logger.Sugar(), repo)
 	if err != nil {
-		return fmt.Errorf("logger init error: %v", err)
+		return err
+	}
+	authService, err := service.NewServiceAuth(config, repo)
+	if err != nil {
+		return err
 	}
 
+	// Handler
+	mainHandler, err := handler.NewMainHandler(logger, serviceShortener)
+	if err != nil {
+		return err
+	}
+
+	// Router
 	r := chi.NewRouter()
 
-	authService, err := services.NewServiceAuth(conf, repository)
-	if err != nil {
-		return err
-	}
+	r.Use(middleware.Log(logger.Sugar()))
+	r.Use(middleware.Auth(config, authService, logger.Sugar()))
+	r.Use(middleware.Encoding)
 
-	//aliases, _ := utils.LoadStorage(conf.FileStoragePath)
+	r.Get("/{id}", mainHandler.GetShortURL)
+	r.Get("/ping", mainHandler.Ping)
+	r.Get("/api/user/urls", mainHandler.GetShortURLs)
+	r.Delete("/api/user/urls", mainHandler.Detele)
+	r.Post("/", mainHandler.CreateShortURL)
+	r.Post("/api/shorten", mainHandler.CreateShortURL)
+	r.Post("/api/shorten/batch", mainHandler.CreateShortURLs)
 
-	mainHandler, err := handlers.NewMainHandler(conf, nil, logger, repository)
-	if err != nil {
-		return err
-	}
-
-	//r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.HandleGET), conf, authService), logger.Sugar()))
-	r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURL), conf, authService), logger.Sugar()))
-	//r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
-	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.Ping), conf, authService), logger.Sugar()))
-
-	//r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
-	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURLs), conf, authService), logger.Sugar()))
-	r.Delete("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.Detele), conf, authService), logger.Sugar()))
-
-	//r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOST), conf, authService), logger.Sugar()))
-	r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))
-	//r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), conf, authService), logger.Sugar()))
-	r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))
-	//r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.Batch), conf, authService), logger.Sugar()))
-	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURLs), conf, authService), logger.Sugar()))
-
+	// Logs
 	logger.Sugar().Infoln(
 		"Server is running",
-		"Server address", conf.ServerAddress,
-		"Base URL", conf.BaseURL,
+		"Server address", config.ServerAddress,
+		"Base URL", config.BaseURL,
 	)
-	server := &http.Server{Addr: conf.ServerAddress, Handler: r}
+
+	// Server
+	server := &http.Server{Addr: config.ServerAddress, Handler: r}
 	start := time.Now()
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
@@ -96,11 +108,11 @@ func Run(conf *config.Config) error {
 		"server shutdown",
 		"time running", duration,
 	)
-	shortURLs, err := repository.GetAllShortURL()
+	shortURLs, err := repo.GetAllShortURL()
 	if err != nil {
 		return err
 	}
-	err = utils.SaveStorage(shortURLs, conf.FileStoragePath)
+	err = utils.SaveStorage(shortURLs, config.FileStoragePath)
 	if err != nil {
 		return err
 	}

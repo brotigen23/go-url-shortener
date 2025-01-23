@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
@@ -23,8 +23,8 @@ func NewInMemoryRepository(shortURLs []model.ShortURL) *inMemoryRepo {
 		ShortURLs: shortURLs,
 	}
 }
-func (repo *inMemoryRepo) Close() error {
+func (r *inMemoryRepo) Close() error {
 	return nil
 }
 
-func (repo *inMemoryRepo) CheckDBConnection() error { return nil }
+func (r *inMemoryRepo) CheckDBConnection() error { return nil }

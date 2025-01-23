@@ -1,4 +1,4 @@
-package handlers
+package middleware
 
 import (
 	"net/http"
@@ -30,9 +30,9 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerFunc {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
+func Log(logger *zap.SugaredLogger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			start := time.Now()
 
@@ -57,4 +57,5 @@ func WithLogging(next http.HandlerFunc, logger *zap.SugaredLogger) http.HandlerF
 				"content-type", r.Header.Get("content-type"),
 			)
 		})
+	}
 }

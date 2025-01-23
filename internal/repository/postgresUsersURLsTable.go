@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
@@ -6,19 +6,19 @@ import (
 
 //---------------------- Users_ShortURLs table ----------------------
 
-func (repo PostgresRepository) GetAllUsersShortURLS() ([]model.UsersShortURLs, error) {
+func (r PostgresRepository) GetAllUsersShortURLS() ([]model.UsersShortURLs, error) {
 	return nil, nil
 }
 
-func (repo PostgresRepository) GetUsersShortURLSByID(ID int) (*model.UsersShortURLs, error) {
+func (r PostgresRepository) GetUsersShortURLSByID(ID int) (*model.UsersShortURLs, error) {
 	return nil, nil
 }
 
 // Return all user's shortURL by UserID
-func (repo PostgresRepository) GetUsersShortURLSByUserID(userID int) ([]model.UsersShortURLs, error) {
+func (r PostgresRepository) GetUsersShortURLSByUserID(userID int) ([]model.UsersShortURLs, error) {
 	//query := "SELECT * FROM Users_URLs WHERE ID IN (( SELECT URL_ID FROM Users_URLs WHERE User_ID = $1))"
 	query := "SELECT * FROM Users_URLs WHERE User_ID = $1"
-	q, err := repo.db.Query(query, userID)
+	q, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,16 +43,16 @@ func (repo PostgresRepository) GetUsersShortURLSByUserID(userID int) ([]model.Us
 }
 
 // Return all users by ShortURL
-func (repo PostgresRepository) GetUsersShortURLSByURLID(urlID int) (*model.UsersShortURLs, error) {
+func (r PostgresRepository) GetUsersShortURLSByURLID(urlID int) (*model.UsersShortURLs, error) {
 	return nil, nil
 }
 
-func (repo PostgresRepository) SaveUserShortURL(UsersShortURLs model.UsersShortURLs) (*model.UsersShortURLs, error) {
+func (r PostgresRepository) SaveUserShortURL(UsersShortURLs model.UsersShortURLs) (*model.UsersShortURLs, error) {
 	query := "INSERT INTO Users_URLs(User_ID, URL_ID) VALUES($1, $2) RETURNING ID"
 	var (
 		id int
 	)
-	err := repo.db.QueryRow(query, UsersShortURLs.UserID, UsersShortURLs.URLID).Scan(&id)
+	err := r.db.QueryRow(query, UsersShortURLs.UserID, UsersShortURLs.URLID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}

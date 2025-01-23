@@ -1,4 +1,4 @@
-package services
+package service
 
 import (
 	"crypto/hmac"
@@ -7,12 +7,12 @@ import (
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
-	"github.com/brotigen23/go-url-shortener/internal/repositories"
+	"github.com/brotigen23/go-url-shortener/internal/repository"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 )
 
 type ServiceAuth struct {
-	repo repositories.Repository
+	repo repository.Repository
 
 	key    []byte
 	signes map[string][]byte
@@ -28,7 +28,7 @@ func generateKey(size int) ([]byte, error) {
 	return b, nil
 }
 
-func NewServiceAuth(config *config.Config, repository repositories.Repository) (*ServiceAuth, error) {
+func NewServiceAuth(config *config.Config, repository repository.Repository) (*ServiceAuth, error) {
 	key, err := generateKey(16)
 	if err != nil {
 		return nil, err

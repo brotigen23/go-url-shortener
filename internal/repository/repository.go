@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import "github.com/brotigen23/go-url-shortener/internal/model"
 
