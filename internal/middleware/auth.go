@@ -11,6 +11,7 @@ import (
 func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			logger.Debugln(r.Cookie())
 			cookie, err := r.Cookie("JWT")
 			if err != nil {
 				if err == http.ErrNoCookie {

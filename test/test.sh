@@ -43,5 +43,11 @@ case "$test" in
   -H 'content-type: text/plain' \
   --data "asd"  \
   ;;
+  [4]   ) 
+  curl -i localhost:8080 \
+  -X POST \
+  -H 'content-type: text/plain' \
+  --cookie 'JWT='
+  ;;
 esac
 
