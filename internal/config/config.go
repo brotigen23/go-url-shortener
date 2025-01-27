@@ -2,39 +2,44 @@ package config
 
 import (
 	"flag"
-	"os"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
-/*
-Флаг -a отвечает за адрес запуска HTTP-сервера (значение может быть таким: localhost:8888).
-Флаг -b отвечает за базовый адрес результирующего сокращённого URL (значение: адрес сервера перед коротким URL, например http://localhost:8000/qsd54gFg).
-*/
-
 type Config struct {
-	ServerAddress   string
-	BaseURL         string
-	FileStoragePath string
-	DatabaseDSN     string
+	ServerAddress   string `env:"SERVER_ADDRESS" env-default:"localhost:8080"`
+	BaseURL         string `env:"BASE_URL" env-default:"http://localhost:8080"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	DatabaseDSN     string `env:"DATABASE_DSN"`
+
+	JWTSecretKey string `env:"SECRET_KEY" env-default:"secret"`
 }
 
-func NewConfig() *Config {
-	ret := &Config{}
-	flag.StringVar(&ret.ServerAddress, "a", "localhost:8080", "base host")
-	flag.StringVar(&ret.BaseURL, "b", "http://localhost:8080", "base host for aliases")
-	flag.StringVar(&ret.FileStoragePath, "f", "./aliases.txt", "Path to file with aliases")
-	flag.StringVar(&ret.DatabaseDSN, "d", "", "String connection to DB")
+func NewConfig() (*Config, error) {
+	// Read env
+	cfg := &Config{}
+	err := cleanenv.ReadEnv(cfg)
+	if err != nil {
+		return nil, err
+	}
+	// Read flags
+	a := flag.String("a", "localhost:8080", "server address")
+	b := flag.String("b", "http://localhost:8080", "base host for aliases")
+	f := flag.String("f", "./aliases.txt", "Path to file with aliases")
+	d := flag.String("d", "", "String connection to DB")
+
 	flag.Parse()
-	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
-		ret.ServerAddress = envRunAddr
+	if *a != "" {
+		cfg.ServerAddress = *a
 	}
-	if envRunAddr := os.Getenv("BASE_URL"); envRunAddr != "" {
-		ret.BaseURL = envRunAddr
+	if *b != "" {
+		cfg.BaseURL = *b
 	}
-	if envRunAddr := os.Getenv("FILE_STORAGE_PATH"); envRunAddr != "" {
-		ret.FileStoragePath = envRunAddr
+	if *d != "" {
+		cfg.DatabaseDSN = *d
 	}
-	if envRunAddr := os.Getenv("DATABASE_DSN"); envRunAddr != "" {
-		ret.DatabaseDSN = envRunAddr
+	if *f != "" {
+		cfg.FileStoragePath = *f
 	}
-	return ret
+	return cfg, nil
 }

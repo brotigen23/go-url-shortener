@@ -3,10 +3,13 @@ package utils
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func NewRandomString(size int) string {
@@ -68,4 +71,41 @@ func SaveStorage(aliases []model.ShortURL, filePath string) error {
 		}
 	}
 	return nil
+}
+
+type UserJWTClaims struct {
+	jwt.RegisteredClaims
+	username string
+}
+
+func GetUsernameFromJWT(tokenString string, key string) (string, error) {
+	claims := &UserJWTClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims,
+		func(t *jwt.Token) (interface{}, error) {
+			return []byte(key), nil
+		})
+	if err != nil {
+		return "", err
+	}
+
+	if !token.Valid {
+		return "", fmt.Errorf("token is invalid")
+	}
+
+	return claims.username, nil
+}
+
+func BuildJWTString(username string, key string, expires time.Duration) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &UserJWTClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expires)),
+		},
+		username: username,
+	})
+
+	tokenString, err := token.SignedString([]byte(key))
+	if err != nil {
+		return "", nil
+	}
+	return tokenString, nil
 }

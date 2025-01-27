@@ -22,5 +22,7 @@ vendor/
 .idea
 .vscode
 
+.env
+
 tmp/
 aliases.txt

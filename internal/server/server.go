@@ -4,6 +4,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,75 +14,77 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/handler"
 	"github.com/brotigen23/go-url-shortener/internal/middleware"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
+	"github.com/brotigen23/go-url-shortener/internal/repository/memory"
+	"github.com/brotigen23/go-url-shortener/internal/repository/postgres"
 	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-func Run(config *config.Config) error {
-	// Init
-	//Logger
-	logConf := zap.NewDevelopmentConfig()
-	logConf.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	logger, err := logConf.Build()
-	if err != nil {
-		return err
-	}
+func Run(config *config.Config, logger *zap.SugaredLogger) error {
 
-	logger.Info("Now logs should be colored")
+	//------------------------------------------------------------
+	// REPOSITORY
+	//------------------------------------------------------------
 	var repo repository.Repository
-	// Repo
+	const driver = "postgres"
 	switch config.DatabaseDSN {
 	case "":
-		repo = repository.NewInMemoryRepo(nil, nil, nil)
+		repo = memory.New(nil)
 	default:
-		repo, err = repository.NewPostgresRepository("postgres", config.DatabaseDSN, logger)
+		db, err := sql.Open(driver, config.DatabaseDSN)
 		if err != nil {
 			return err
 		}
-	}
-	// Services
+		defer db.Close()
 
-	serviceShortener, err := service.NewServiceShortener(config, 8, logger.Sugar(), repo)
+		err = db.Ping()
+		if err != nil {
+			return err
+		}
+		repo = postgres.New(db, logger)
+	}
+	logger.Debugln("repo is initialized")
+
+	//------------------------------------------------------------
+	// SERVICES AND HANDLER
+	//------------------------------------------------------------
+	serviceShortener, err := service.New(config, logger, repo)
 	if err != nil {
 		return err
 	}
-	authService, err := service.NewServiceAuth(config, repo)
+	logger.Debugln("service is initialized")
+
+	handler, err := handler.New(config.BaseURL, serviceShortener)
 	if err != nil {
 		return err
 	}
 
-	// Handler
-	mainHandler, err := handler.NewMainHandler(logger, serviceShortener)
-	if err != nil {
-		return err
-	}
+	logger.Debugln("handler is initialized")
 
-	// Router
+	//------------------------------------------------------------
+	// ROUTER
+	//------------------------------------------------------------
 	r := chi.NewRouter()
 
-	r.Use(middleware.Log(logger.Sugar()))
-	r.Use(middleware.Auth(config, authService, logger.Sugar()))
+	r.Use(middleware.Log(logger))
+	r.Use(middleware.Auth(config.JWTSecretKey, logger)) // TODO: secret key from config
 	r.Use(middleware.Encoding)
 
-	r.Get("/{id}", mainHandler.GetShortURL)
-	r.Get("/ping", mainHandler.Ping)
-	r.Get("/api/user/urls", mainHandler.GetShortURLs)
-	r.Delete("/api/user/urls", mainHandler.Detele)
-	r.Post("/", mainHandler.CreateShortURL)
-	r.Post("/api/shorten", mainHandler.CreateShortURL)
-	r.Post("/api/shorten/batch", mainHandler.CreateShortURLs)
+	r.Get("/{id}", handler.GetShortURL)
+	r.Get("/ping", handler.Ping)
+	r.Get("/api/user/urls", handler.GetShortURLs)
+	r.Delete("/api/user/urls", handler.Detele)
+	r.Post("/", handler.CreateShortURL)
+	r.Post("/api/shorten", handler.CreateShortURL)
+	r.Post("/api/shorten/batch", handler.CreateShortURLs)
 
-	// Logs
-	logger.Sugar().Infoln(
-		"Server is running",
-		"Server address", config.ServerAddress,
-		"Base URL", config.BaseURL,
-	)
+	logger.Debugln("router is initialized")
 
-	// Server
+	//------------------------------------------------------------
+	// SERVER
+	//------------------------------------------------------------
 	server := &http.Server{Addr: config.ServerAddress, Handler: r}
 	start := time.Now()
 	go func() {
@@ -89,12 +92,14 @@ func Run(config *config.Config) error {
 			return
 		}
 	}()
+	logger.Infoln("Server is running")
 
-	// Setting up signal capturing
+	//------------------------------------------------------------
+	// GRACEFULL SHUTDOWN
+	//------------------------------------------------------------
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	// Waiting for SIGINT (kill -2)
 	<-stop
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -104,11 +109,11 @@ func Run(config *config.Config) error {
 	}
 	duration := time.Since(start)
 
-	logger.Sugar().Infoln(
+	logger.Infoln(
 		"server shutdown",
 		"time running", duration,
 	)
-	shortURLs, err := repo.GetAllShortURL()
+	shortURLs, err := repo.GetAll()
 	if err != nil {
 		return err
 	}

@@ -11,32 +11,31 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/dto"
 	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
 )
 
-type mainHandler struct {
-	service *service.ServiceShortener
+type handler struct {
+	baseURL string
+
+	service *service.Service
 }
 
-func NewMainHandler(logger *zap.Logger, service *service.ServiceShortener) (*mainHandler, error) {
-	return &mainHandler{
+func New(baseURL string, service *service.Service) (*handler, error) {
+	return &handler{
 		service: service,
+		baseURL: baseURL,
 	}, nil
 }
 
 // Store new ShortURL
-func (h *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
-    switch r.Header.Get("content-type") {
-	case "text/plain; charset=utf-8", "text/plain", "application/x-gzip":
-		rw.Header().Set("content-type", "text/plain")
-	case "application/json":
-		rw.Header().Set("content-type", "application/json")
-	}
+func (h *handler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 
-	// ------------------------------- Read request data -------------------------------
+	// --------------------------------------------------------------
+	// READ REQUEST DATA
+	// --------------------------------------------------------------
 	var URL string
 	switch r.Header.Get("content-type") {
-	case "text/plain; charset=utf-8", "text/plain", "application/x-gzip":
+	case "text/plain; charset=utf-8", "application/x-gzip", "text/plain":
+		rw.Header().Set("content-type", "text/plain")
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -44,7 +43,8 @@ func (h *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 		}
 		URL = string(body)
 	case "application/json":
-		request := &dto.APIShortenRequest{}
+		rw.Header().Set("content-type", "application/json")
+		request := &dto.ShortenRequest{}
 		var buffer bytes.Buffer
 		_, err := buffer.ReadFrom(r.Body)
 		if err != nil {
@@ -58,16 +58,21 @@ func (h *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 		URL = request.URL
 	}
 
+	if URL == "" {
+		http.Error(rw, "url is empty", http.StatusBadRequest)
+		return
+	}
 	// ------------------------------- Save URL -------------------------------
-	userName, err := r.Cookie("userID")
+	userName, err := r.Cookie("username")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
-	alias, err := h.service.SaveURL(userName.Value, URL)
+	alias, err := h.service.CreateShortURL(userName.Value, URL)
 	if err != nil {
-		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
+		if err == service.ErrShortURLAlreadyExists {
 			rw.WriteHeader(http.StatusConflict)
+			return
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -79,9 +84,9 @@ func (h *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 
 	switch r.Header.Get("content-type") {
 	case "text/plain; charset=utf-8", "text/plain", "application/x-gzip":
-		response = []byte(h.service.GetBaseURL() + "/" + alias)
+		response = []byte(h.baseURL + "/" + alias)
 	case "application/json":
-		result := dto.NewAPIShortenResponse(h.service.GetBaseURL() + "/" + alias)
+		result := dto.ShortenResponse{Result: h.baseURL + "/" + alias}
 		response, err = json.Marshal(result)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -97,8 +102,8 @@ func (h *mainHandler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Store new ShortURLs
-func (h *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
-	request := []dto.APIBatchRequest{}
+func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
+	request := []dto.BatchRequest{}
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
@@ -114,12 +119,13 @@ func (h *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 		URLs = append(URLs, url.URL)
 	}
 
-	BatchResponse := []*dto.APIBatchResponse{}
-	userName, err := r.Cookie("userID")
+	BatchResponse := []*dto.BatchResponse{}
+	userName, err := r.Cookie("username")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
 	}
-	shortURLs, err := h.service.SaveURLs(userName.Value, URLs)
+	shortURLs, err := h.service.CreateShortURLs(userName.Value, URLs)
 	if err != nil {
 		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
 			rw.WriteHeader(http.StatusConflict)
@@ -128,8 +134,9 @@ func (h *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	// TODO: перенести создание Batch Response в коструктор с параметром map[string]string
 	for i := range request {
-		BatchResponse = append(BatchResponse, dto.NewAPIBatchResponse(request[i].ID, h.service.GetBaseURL()+"/"+shortURLs[request[i].URL]))
+		BatchResponse = append(BatchResponse, &dto.BatchResponse{ID: request[i].ID, ShortURL: h.baseURL + "/" + shortURLs[request[i].URL]})
 	}
 	// Заголовки и статус ответа
 	rw.Header().Set("content-type", "application/json")
@@ -149,14 +156,14 @@ func (h *mainHandler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Return URL by Alias
-func (h *mainHandler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
-	URL, err := h.service.GetURL(alias)
+	URL, err := h.service.GetShortURL(alias)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		return
 	}
-	isDeleted, err := h.service.IsDeleted(alias)
+	isDeleted, err := h.service.IsShortURLDeleted(alias)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		return
@@ -169,12 +176,12 @@ func (h *mainHandler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 	userName, err := r.Cookie("userID")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
-	URLs, err := h.service.GetURLs(userName.Value)
+	URLs, err := h.service.GetShortURLs(userName.Value)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
@@ -182,9 +189,9 @@ func (h *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusNoContent)
 		return
 	}
-	batchResponse := []dto.APIUserURLs{}
+	batchResponse := []dto.UserURLs{}
 	for key, value := range URLs {
-		batchResponse = append(batchResponse, *dto.NewAPIUserURLs(key, h.service.GetBaseURL()+"/"+value))
+		batchResponse = append(batchResponse, dto.UserURLs{OriginalURL: key, ShortURL: h.baseURL + "/" + value})
 	}
 	// Заголовки и статус ответа
 	rw.Header().Set("content-type", "application/json")
@@ -202,7 +209,7 @@ func (h *mainHandler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
 
-func (h *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 	request := []string{}
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
@@ -219,7 +226,7 @@ func (h *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
-	URLs, err := h.service.GetURLs(userName.Value)
+	URLs, err := h.service.GetShortURLs(userName.Value)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -229,7 +236,7 @@ func (h *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(request)
-	err = h.service.DeleteURLs(userName.Value, request)
+	err = h.service.DeleteShortURLs(userName.Value, request)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -238,10 +245,6 @@ func (h *mainHandler) Detele(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusAccepted)
 }
 
-func (h *mainHandler) Ping(rw http.ResponseWriter, r *http.Request) {
-	if h.service.CheckDBConnection() != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+func (h *handler) Ping(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
