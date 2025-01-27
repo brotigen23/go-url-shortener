@@ -38,14 +38,14 @@ func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler
 					return
 				}
 			}
+			if cookie.Value == "" {
+				http.Error(w, "username is empty", http.StatusUnauthorized)
+				return
+			}
 			username, err := utils.GetUsernameFromJWT(cookie.Value, key)
 			if err != nil {
 				logger.Errorln(err)
 				http.Error(w, err.Error(), http.StatusUnauthorized)
-				return
-			}
-			if username == "" {
-				http.Error(w, "username is empty", http.StatusUnauthorized)
 				return
 			}
 			r.AddCookie(&http.Cookie{Name: "username", Value: username})
