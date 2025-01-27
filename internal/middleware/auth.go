@@ -15,6 +15,10 @@ func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler
 			cookie, err := r.Cookie("JWT")
 			if err != nil {
 				if err == http.ErrNoCookie {
+					if r.URL.Path == "/api/user/urls" {
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
 					username := utils.NewRandomString(16)
 					logger.Debugln("new user", username)
 
