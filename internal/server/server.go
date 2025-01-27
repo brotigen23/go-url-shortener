@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
+	"github.com/brotigen23/go-url-shortener/internal/database/migration"
 	"github.com/brotigen23/go-url-shortener/internal/handler"
 	"github.com/brotigen23/go-url-shortener/internal/middleware"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
@@ -19,11 +20,13 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
 func Run(config *config.Config, logger *zap.SugaredLogger) error {
-
+	user, _ := utils.GetUsernameFromJWT("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE2Nzc0NjksInVzZXJuYW1lIjoiYXNkIn0.SIIKTZ6rnUHxR08zcIXx6FLFiS4_H9H0a5DME_g4Suk", "secret")
+	logger.Warnln("user", user)
 	//------------------------------------------------------------
 	// REPOSITORY
 	//------------------------------------------------------------
@@ -40,6 +43,10 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		defer db.Close()
 
 		err = db.Ping()
+		if err != nil {
+			return err
+		}
+		err = migration.MigratePostgresUp(db)
 		if err != nil {
 			return err
 		}

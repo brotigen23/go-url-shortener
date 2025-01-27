@@ -177,9 +177,10 @@ func (h *handler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
-	userName, err := r.Cookie("userID")
+	userName, err := r.Cookie("username")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
 	}
 	URLs, err := h.service.GetShortURLs(userName.Value)
 	if err != nil {

@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -13,19 +12,19 @@ func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("JWT")
-
+			logger.Debugln("request with", cookie, "cookie")
 			if err != nil {
 				if err == http.ErrNoCookie {
 					username := utils.NewRandomString(16)
+					logger.Debugln("new user", username)
 
 					expires := time.Hour * 1024
 					jwtString, err := utils.BuildJWTString(username, key, expires)
 					if err != nil {
-						log.Printf("error: %v", err.Error())
+						logger.Errorln(err)
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-
 					cookie = &http.Cookie{
 						Name:  "JWT",
 						Value: jwtString,
@@ -35,19 +34,18 @@ func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler
 					next.ServeHTTP(w, r)
 					return
 				} else {
-					logger.Errorf("auth error: %n\n", err.Error())
+					logger.Errorln(err)
 					http.Error(w, err.Error(), http.StatusUnauthorized)
 					return
-
 				}
 			}
-
 			user, err := utils.GetUsernameFromJWT(cookie.Value, key)
 			if err != nil {
-				logger.Errorf("auth error: %n\n", err.Error())
+				logger.Errorln(err)
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
 			}
+			logger.Debugln("user", user)
 
 			r.AddCookie(&http.Cookie{Name: "username", Value: user})
 			next.ServeHTTP(w, r)

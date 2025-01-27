@@ -75,7 +75,7 @@ func SaveStorage(aliases []model.ShortURL, filePath string) error {
 
 type UserJWTClaims struct {
 	jwt.RegisteredClaims
-	username string
+	Username string
 }
 
 func GetUsernameFromJWT(tokenString string, key string) (string, error) {
@@ -91,8 +91,7 @@ func GetUsernameFromJWT(tokenString string, key string) (string, error) {
 	if !token.Valid {
 		return "", fmt.Errorf("token is invalid")
 	}
-
-	return claims.username, nil
+	return claims.Username, nil
 }
 
 func BuildJWTString(username string, key string, expires time.Duration) (string, error) {
@@ -100,12 +99,13 @@ func BuildJWTString(username string, key string, expires time.Duration) (string,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expires)),
 		},
-		username: username,
+		Username: username,
 	})
 
 	tokenString, err := token.SignedString([]byte(key))
 	if err != nil {
-		return "", nil
+		return "", err
 	}
+
 	return tokenString, nil
 }

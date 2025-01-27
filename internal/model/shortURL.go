@@ -3,7 +3,7 @@ package model
 type ShortURL struct {
 	ID        int
 	URL       string
-	Alias     string
+	ShortURL  string
 	Username  string
 	IsDeleted bool
 }

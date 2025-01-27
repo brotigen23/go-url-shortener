@@ -55,7 +55,7 @@ func (r Repository) GetByURL(url string) (*model.ShortURL, error) {
 
 func (r Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 	for _, v := range r.shortURLs {
-		if v.Alias == alias {
+		if v.ShortURL == alias {
 			return &v, nil
 		}
 	}

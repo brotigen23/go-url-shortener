@@ -1,8 +1,6 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/brotigen23/go-url-shortener/internal/config"
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
@@ -33,7 +31,7 @@ func (s *Service) SetLengthAlias(lengthAlias int) {
 // Create short url
 func (s Service) CreateShortURL(username string, URL string) (string, error) {
 	alias := utils.NewRandomString(s.lengthAlias)
-	err := s.repository.Create(model.ShortURL{URL: URL, Alias: alias, Username: username})
+	err := s.repository.Create(model.ShortURL{URL: URL, ShortURL: alias, Username: username})
 	if err != nil {
 		if err == repository.ErrShortURLAlreadyExists {
 			return "", ErrShortURLAlreadyExists
@@ -66,6 +64,7 @@ func (s Service) CreateShortURLs(username string, URLs []string) (map[string]str
 func (s Service) GetShortURL(alias string) (string, error) {
 	shortURL, err := s.repository.GetByAlias(alias)
 	if err != nil {
+		s.logger.Errorln(err)
 		return "", err
 	}
 	return shortURL.URL, nil
@@ -73,17 +72,15 @@ func (s Service) GetShortURL(alias string) (string, error) {
 
 // Return all URLs saved by user
 func (s Service) GetShortURLs(username string) (map[string]string, error) {
+	s.logger.Debugln("get", username, "'s urls")
 	ret := make(map[string]string)
 	shortURLs, err := s.repository.GetByUser(username)
 	if err != nil {
-		if err == errors.New("no URLs") {
-			// TODO: нет сохраненных ссылок
-		} else {
-			return nil, err
-		}
+		s.logger.Errorln(err)
+		return nil, err
 	}
 	for _, v := range shortURLs {
-		ret[v.URL] = v.Alias
+		ret[v.URL] = v.ShortURL
 	}
 	return ret, nil
 }

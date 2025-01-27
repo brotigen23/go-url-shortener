@@ -1,7 +1,6 @@
 #!/usr/bin/sh
 
 read test
-go:
 case "$test" in
   [1]   ) 
   echo "Default test"
@@ -31,8 +30,13 @@ case "$test" in
   }
 ]'
             ;;
-  [2]   ) 
-  echo "Буква в верхнем регистре";;
+  [2]   )   
+  echo "get user's urls"
+  curl -i localhost:8080/api/user/urls \
+  -X GET \
+  -H 'content-type: application/json' \
+  --cookie 'JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE2ODMxOTAsIlVzZXJuYW1lIjoiMndnSTl3UFRMMmJ6Z3pzUiJ9.gb184S3gyHcNjrxAr0yImWRUWX_6hSRnH0zStpTxnXE'\
+  ;;
   [3]   ) 
   echo "Цифра";;
 esac
