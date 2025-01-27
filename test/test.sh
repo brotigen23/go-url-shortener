@@ -38,6 +38,10 @@ case "$test" in
   --cookie 'JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE2ODMxOTAsIlVzZXJuYW1lIjoiMndnSTl3UFRMMmJ6Z3pzUiJ9.gb184S3gyHcNjrxAr0yImWRUWX_6hSRnH0zStpTxnXE'\
   ;;
   [3]   ) 
-  echo "Цифра";;
+  curl -i localhost:8080 \
+  -X POST \
+  -H 'content-type: text/plain' \
+  --data "asd"  \
+  ;;
 esac
 

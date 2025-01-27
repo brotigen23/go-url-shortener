@@ -72,7 +72,6 @@ func (h *handler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == service.ErrShortURLAlreadyExists {
 			rw.WriteHeader(http.StatusConflict)
-			return
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -134,7 +133,6 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// TODO: перенести создание Batch Response в коструктор с параметром map[string]string
 	for i := range request {
 		BatchResponse = append(BatchResponse, &dto.BatchResponse{ID: request[i].ID, ShortURL: h.baseURL + "/" + shortURLs[request[i].URL]})
 	}
