@@ -71,7 +71,7 @@ func (h *handler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 	alias, err := h.service.CreateShortURL(userName.Value, URL)
 	if err != nil {
 		if err == service.ErrShortURLAlreadyExists {
-			http.Error(rw, "short url already saved", http.StatusConflict)
+			rw.WriteHeader(http.StatusConflict)
 			return
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -128,7 +128,7 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 	shortURLs, err := h.service.CreateShortURLs(userName.Value, URLs)
 	if err != nil {
 		if err == service.ErrShortURLAlreadyExists {
-			http.Error(rw, "some short url already register", http.StatusConflict)
+			rw.WriteHeader(http.StatusConflict)
 		} else {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
