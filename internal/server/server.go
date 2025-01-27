@@ -120,14 +120,16 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		"server shutdown",
 		"time running", duration,
 	)
-	shortURLs, err := repo.GetAll()
-	if err != nil {
-		return err
+	if config.DatabaseDSN == "" {
+		shortURLs, err := repo.GetAll()
+		if err != nil {
+			return err
+		}
+		err = utils.SaveStorage(shortURLs, config.FileStoragePath)
+		if err != nil {
+			return err
+		}
+		logger.Infoln("short urls saved to", config.FileStoragePath)
 	}
-	err = utils.SaveStorage(shortURLs, config.FileStoragePath)
-	if err != nil {
-		return err
-	}
-	logger.Infoln("short urls saved to", config.FileStoragePath)
 	return nil
 }

@@ -71,15 +71,15 @@ func (r repository) GetByUser(username string) ([]model.ShortURL, error) {
 		return nil, err
 	}
 	var ID int
-	var URL, short_url string
+	var URL, shortURL string
 	var IsDeleted bool
 
 	for row.Next() {
-		err := row.Scan(&ID, &URL, &short_url, &IsDeleted)
+		err := row.Scan(&ID, &URL, &shortURL, &IsDeleted)
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, model.ShortURL{ID: ID, URL: URL, ShortURL: short_url, Username: username, IsDeleted: IsDeleted})
+		ret = append(ret, model.ShortURL{ID: ID, URL: URL, ShortURL: shortURL, Username: username, IsDeleted: IsDeleted})
 	}
 	err = row.Err()
 	if err != nil {
