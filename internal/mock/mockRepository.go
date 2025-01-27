@@ -49,17 +49,17 @@ func (mr *MockRepositoryMockRecorder) Create(shortURL interface{}) *gomock.Call 
 }
 
 // Delete mocks base method.
-func (m *MockRepository) Delete(shortURL []model.ShortURL) error {
+func (m *MockRepository) Delete(username string, shortURL []model.ShortURL) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", shortURL)
+	ret := m.ctrl.Call(m, "Delete", username, shortURL)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockRepositoryMockRecorder) Delete(shortURL interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) Delete(username, shortURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRepository)(nil).Delete), shortURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRepository)(nil).Delete), username, shortURL)
 }
 
 // GetAll mocks base method.
@@ -123,15 +123,15 @@ func (mr *MockRepositoryMockRecorder) GetByUser(username interface{}) *gomock.Ca
 }
 
 // Update mocks base method.
-func (m *MockRepository) Update(shortURL model.ShortURL) error {
+func (m *MockRepository) Update(username string, shortURL model.ShortURL) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", shortURL)
+	ret := m.ctrl.Call(m, "Update", username, shortURL)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockRepositoryMockRecorder) Update(shortURL interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) Update(username, shortURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRepository)(nil).Update), shortURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRepository)(nil).Update), username, shortURL)
 }
