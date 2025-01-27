@@ -2,9 +2,9 @@
 -- +goose StatementBegin
 CREATE TABLE short_url(
     id SERIAL PRIMARY KEY,
-    url VARCHAR UNIQUE, 
+    url VARCHAR UNIQUE UNIQUE, 
     short_url VARCHAR UNIQUE,
-    username VARCHAR UNIQUE,
+    username VARCHAR,
     is_deleted BOOLEAN DEFAULT FALSE
 )
 -- +goose StatementEnd

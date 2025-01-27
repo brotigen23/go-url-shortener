@@ -25,8 +25,6 @@ import (
 )
 
 func Run(config *config.Config, logger *zap.SugaredLogger) error {
-	user, _ := utils.GetUsernameFromJWT("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE2Nzc0NjksInVzZXJuYW1lIjoiYXNkIn0.SIIKTZ6rnUHxR08zcIXx6FLFiS4_H9H0a5DME_g4Suk", "secret")
-	logger.Warnln("user", user)
 	//------------------------------------------------------------
 	// REPOSITORY
 	//------------------------------------------------------------

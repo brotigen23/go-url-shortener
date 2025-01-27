@@ -12,7 +12,6 @@ func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("JWT")
-			logger.Debugln("request with", cookie, "cookie")
 			if err != nil {
 				if err == http.ErrNoCookie {
 					username := utils.NewRandomString(16)
@@ -45,8 +44,6 @@ func Auth(key string, logger *zap.SugaredLogger) func(http.Handler) http.Handler
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
 			}
-			logger.Debugln("user", user)
-
 			r.AddCookie(&http.Cookie{Name: "username", Value: user})
 			next.ServeHTTP(w, r)
 		})
