@@ -17,8 +17,6 @@ func initLog() (*zap.SugaredLogger, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	logger.Info("Now logs should be colored")
 	return logger.Sugar(), nil
 }
 
@@ -31,7 +29,7 @@ func Run() error {
 
 	err = godotenv.Load()
 	if err != nil {
-		return err
+		logger.Debugln(err.Error())
 	}
 	config, err := config.NewConfig()
 	if err != nil {
