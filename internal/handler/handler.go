@@ -209,9 +209,15 @@ func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
+	username, err := r.Cookie("username")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	request := []string{}
 	var buf bytes.Buffer
-	_, err := buf.ReadFrom(r.Body)
+	_, err = buf.ReadFrom(r.Body)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -220,12 +226,7 @@ func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
-	userName, err := r.Cookie("userID")
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-	URLs, err := h.service.GetShortURLs(userName.Value)
+	URLs, err := h.service.GetShortURLs(username.Value)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -235,7 +236,7 @@ func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(request)
-	err = h.service.DeleteShortURLs(userName.Value, request)
+	err = h.service.DeleteShortURLs(username.Value, request)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return

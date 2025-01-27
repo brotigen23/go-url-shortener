@@ -9,5 +9,10 @@ type ShortURL struct {
 }
 
 func NewShortURLs(aliases []string) []ShortURL {
-	return nil
+	ret := []ShortURL{}
+	for i, v := range aliases {
+		ret = append(ret, ShortURL{})
+		ret[i].ShortURL = v
+	}
+	return ret
 }

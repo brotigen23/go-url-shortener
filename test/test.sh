@@ -44,10 +44,14 @@ case "$test" in
   --data "asd"  \
   ;;
   [4]   ) 
-  curl -i localhost:8080 \
-  -X POST \
-  -H 'content-type: text/plain' \
-  --cookie 'JWT='
+  curl -i localhost:8080/api/user/urls \
+  -X DELETE \
+  -H 'content-type: application/json' \
+  --cookie 'JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE2OTg4OTEsIlVzZXJuYW1lIjoiU2I0ZlRVRUltcklHNndSVyJ9.u2Jxoqwu6lxdISgQoapg4hv0zOlJF4x7iPkP7zZu8LY' \
+  --data '
+[
+  "lmMJw0Ho", "HET0DTqZ"
+]'
   ;;
 esac
 

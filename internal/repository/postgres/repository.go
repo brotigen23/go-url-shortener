@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
@@ -151,16 +152,21 @@ func (r Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 func (r Repository) Update(username string, shortURL model.ShortURL) error { return nil }
 
 func (r Repository) Delete(username string, shortURL []model.ShortURL) error {
-	query := `
+	aliases := make([]string, 0)
+	for i := range shortURL {
+		aliases = append(aliases, "")
+		aliases[i] = `'` + shortURL[i].ShortURL + `'`
+	}
+	toDelete := strings.Join(aliases[:], ",")
+	r.logger.Debugln("url to delete", toDelete)
+	query := fmt.Sprintf(`
 	UPDATE short_url 
-	SET is_deleted = true
-	WHERE short_url = $1 AND username = $2`
-
-	_, err := r.db.Exec(query, fmt.Sprint(shortURL), username)
+	SET is_deleted = TRUE
+	WHERE short_url IN (%s)`, toDelete)
+	_, err := r.db.Exec(query)
 	if err != nil {
 		r.logger.Errorln(err)
 		return err
 	}
 	return nil
-
 }
