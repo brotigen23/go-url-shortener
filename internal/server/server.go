@@ -121,5 +121,6 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	if err != nil {
 		return err
 	}
+	logger.Infoln("short urls saved to", config.FileStoragePath)
 	return nil
 }

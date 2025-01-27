@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
+	"github.com/brotigen23/go-url-shortener/internal/database"
 	"github.com/brotigen23/go-url-shortener/internal/dto"
 	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -238,7 +238,6 @@ func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 	fmt.Println(request)
 	err = h.service.DeleteShortURLs(userName.Value, request)
 	if err != nil {
-		log.Println(err.Error())
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -246,5 +245,9 @@ func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) Ping(rw http.ResponseWriter, r *http.Request) {
+	if err := database.CheckPostgresConnection(h.service.GetDSN()); err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
 	rw.WriteHeader(http.StatusOK)
 }

@@ -23,9 +23,9 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 	// Read flags
-	a := flag.String("a", "localhost:8080", "server address")
-	b := flag.String("b", "http://localhost:8080", "base host for aliases")
-	f := flag.String("f", "./aliases.txt", "Path to file with aliases")
+	a := flag.String("a", "", "server address")
+	b := flag.String("b", "", "base host for aliases")
+	f := flag.String("f", "", "Path to file with aliases")
 	d := flag.String("d", "", "String connection to DB")
 
 	flag.Parse()

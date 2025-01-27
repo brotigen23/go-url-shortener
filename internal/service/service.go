@@ -106,6 +106,10 @@ func (s Service) IsShortURLDeleted(alias string) (bool, error) {
 	return shortURL.IsDeleted, nil
 }
 
+func (s Service) GetDSN() string {
+	return s.config.DatabaseDSN
+}
+
 // -----------------------------------------------------------------
 //
 //	DEPRECATED
