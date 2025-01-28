@@ -13,6 +13,7 @@ func initLog() (*zap.SugaredLogger, error) {
 	// Logger
 	logConf := zap.NewDevelopmentConfig()
 	logConf.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	logConf.ErrorOutputPaths = []string{"./errors.log"}
 	logger, err := logConf.Build()
 	if err != nil {
 		return nil, err

@@ -70,7 +70,7 @@ func (r Repository) GetAll() ([]model.ShortURL, error) {
 }
 
 func (r Repository) GetByUser(username string) ([]model.ShortURL, error) {
-	ret := []model.ShortURL{}
+	ret := make([]model.ShortURL, 0, 100)
 	query := `
 	SELECT id, url, short_url, is_deleted 
 	FROM short_url
@@ -84,7 +84,6 @@ func (r Repository) GetByUser(username string) ([]model.ShortURL, error) {
 	var ID int
 	var URL, shortURL string
 	var IsDeleted bool
-
 	for row.Next() {
 		err := row.Scan(&ID, &URL, &shortURL, &IsDeleted)
 		if err != nil {

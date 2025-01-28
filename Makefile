@@ -3,7 +3,9 @@
 all: run
 
 run:
-	go run cmd/shortener/main.go
+	go run cmd/shortener/main.go > ./errors.log
+client:
+	go run cmd/client/main.go
 
 test:
 	go test ./... -v -cover 

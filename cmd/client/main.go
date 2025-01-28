@@ -3,60 +3,145 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
+	"encoding/json"
+	"log"
+	"strconv"
+	"sync"
+
+	"math/rand"
+
+	"github.com/brotigen23/go-url-shortener/internal/dto"
+	"github.com/go-resty/resty/v2"
 )
 
-func main() {
-	endpoint := "http://localhost:8080/"
-	// контейнер данных для запроса
-	data := url.Values{}
-	// приглашение в консоли
-	fmt.Println("Введите длинный URL")
-	// открываем потоковое чтение из консоли
-	reader := bufio.NewReader(os.Stdin)
-	// читаем строку из консоли
-	long, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	long = strings.TrimSuffix(long, "\n")
-	// заполняем контейнер данными
-	data.Set("url", long)
-	// добавляем HTTP-клиент
-	client := &http.Client{}
-	// пишем запрос
-	// запрос методом POST должен, помимо заголовков, содержать тело
-	// тело должно быть источником потокового чтения io.Reader
-	request, err := http.NewRequest(http.MethodPost, endpoint, strings.NewReader(data.Encode()))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	// в заголовках запроса указываем кодировку
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	// отправляем запрос и получаем ответ
-	response, err := client.Do(request)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	// выводим код ответа
-	fmt.Println("Статус-код ", response.Status)
-	defer response.Body.Close()
-	// читаем поток из тела ответа
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	// и печатаем его
-	fmt.Println(string(body))
+const target = "http://localhost:8080/"
 
+var JWT []string
+var wg sync.WaitGroup
+
+func NewRandomString(size int) string {
+
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		"0123456789")
+
+	b := make([]rune, size)
+	for i := range b {
+		b[i] = chars[rand.Intn(len(chars))]
+	}
+
+	return string(b)
+}
+
+const URLCounts = 10000 / 2
+
+func main() {
+
+	//--------------------------------------------------
+	// Register user
+	//--------------------------------------------------
+	client := resty.New()
+	resp, err := client.R().
+		Get(target)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	client.SetCookie(resp.Cookies()[0])
+
+	//--------------------------------------------------
+	// CREATE URLS
+	//--------------------------------------------------
+	urls := []string{}
+	aliases := []string{}
+
+	log.Println("Create urls")
+	for i := 0; i < URLCounts; i++ {
+		urls = append(urls, NewRandomString(8))
+	}
+
+	//--------------------------------------------------
+	// POST URLs
+	//--------------------------------------------------
+	wg.Add(2)
+
+	// /
+	go func() {
+		log.Println("Post urls to /")
+		for i := 0; i < URLCounts/2; i++ {
+			resp, err = client.R().
+				SetBody(urls[i]).
+				Post(target)
+			aliases = append(aliases, string(resp.Body()))
+		}
+		wg.Done()
+	}()
+
+	// /api/shorten/batch
+	go func() {
+		log.Println("Post urls to /api/shorten/batch")
+		for i := 0; i < URLCounts/2-1; i += 2 {
+			body, err := json.Marshal([]dto.BatchRequest{
+				{
+					ID:  strconv.Itoa(i),
+					URL: urls[i],
+				},
+				{
+					ID:  strconv.Itoa(i + 1),
+					URL: urls[i+1]},
+			})
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			resp, err = client.R().
+				SetBody(body).
+				Post(target + "api/shorten/batch")
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	//--------------------------------------------------
+	// GET URLs
+	//--------------------------------------------------
+	wg.Add(2)
+
+	// /api/user/urls
+	go func() {
+		log.Println("Get urls from /api/user/urls")
+		for i := 0; i < URLCounts; i++ {
+			resp, err = client.R().
+				Get(target + "api/user/urls")
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		}
+		wg.Done()
+	}()
+
+	// /{id}
+	go func() {
+		log.Println("Get urls from /{id}")
+		for i := 0; i < URLCounts/2; i++ {
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			resp, err = client.R().
+				Get(aliases[i])
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
 }

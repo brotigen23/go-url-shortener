@@ -68,6 +68,9 @@ func (s Service) CreateShortURLs(username string, URLs []string) (map[string]str
 func (s Service) GetShortURL(alias string) (string, error) {
 	shortURL, err := s.repository.GetByAlias(alias)
 	if err != nil {
+		if err == repository.ErrNoFound {
+			return "", ErrShortURLNotFound
+		}
 		s.logger.Errorln(err)
 		return "", err
 	}
@@ -80,6 +83,9 @@ func (s Service) GetShortURLs(username string) (map[string]string, error) {
 	ret := make(map[string]string)
 	shortURLs, err := s.repository.GetByUser(username)
 	if err != nil {
+		if err == repository.ErrNoFound {
+			return nil, ErrShortURLNotFound
+		}
 		s.logger.Errorln(err)
 		return nil, err
 	}
@@ -92,16 +98,20 @@ func (s Service) GetShortURLs(username string) (map[string]string, error) {
 // Delete short urls saved by user
 func (s Service) DeleteShortURLs(username string, aliases []string) error {
 	shortURLs := model.NewShortURLs(aliases)
-	// TODO: возвращать ошибки в соответствие с ошибками репозитория
 	err := s.repository.Delete(username, shortURLs)
+	if err == repository.ErrNoFound {
+		return ErrShortURLNotFound
+	}
 	return err
 }
 
 // Check if short url is deleted
 func (s Service) IsShortURLDeleted(alias string) (bool, error) {
 	shortURL, err := s.repository.GetByAlias(alias)
-	// TODO: возвращать ошибки в соответствие с ошибками репозитория
 	if err != nil {
+		if err == repository.ErrNoFound {
+			return false, ErrShortURLNotFound
+		}
 		return false, err
 	}
 	return shortURL.IsDeleted, nil
