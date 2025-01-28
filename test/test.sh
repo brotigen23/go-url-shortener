@@ -1,19 +1,5 @@
 #!/usr/bin/env bash
 
-
-secs=3600   # Set interval (duration) in seconds.
-
-SECONDS=0   # Reset $SECONDS; counting of seconds will (re)start from 0(-ish).
-while (( SECONDS < secs )); do    # Loop until interval has elapsed.
-    curl -i localhost:8080 \
-    -X POST \
-    -H 'content-type: text/plain' \
-    --data "asd" 
-    
-    curl -i localhost:8080/s3PUAKW4 \
-    -X GET 
-done
-
 read test
 case "$test" in
   [1]   ) 

@@ -76,7 +76,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 
 	r.Use(middleware.Log(logger))
 	r.Use(middleware.Auth(config.JWTSecretKey, logger)) // TODO: secret key from config
-	//r.Use(middleware.Encoding)
+	r.Use(middleware.Encoding)
 
 	r.Get("/{id}", handler.GetShortURL)
 	r.Get("/ping", handler.Ping)
