@@ -2,10 +2,10 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"regexp"
 	"testing"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
@@ -14,6 +14,7 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
 	"github.com/brotigen23/go-url-shortener/internal/service"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +24,7 @@ import (
 const target = "http://localhost:8080"
 
 // -------------------------------------------
-// Init shared var
+// Init shared variables
 // -------------------------------------------
 var cfg = &config.Config{
 	ServerAddress:   "localhost:8080",
@@ -198,10 +199,6 @@ func TestCreateShortURLs(t *testing.T) {
 						ID:  "0",
 						URL: "ya.ru",
 					},
-					{
-						ID:  "1",
-						URL: "google.com",
-					},
 				},
 			},
 			want: want{
@@ -224,11 +221,11 @@ func TestCreateShortURLs(t *testing.T) {
 		},
 	}
 	mockRepository.EXPECT().GetByURL(gomock.Any()).Return(&model.ShortURL{}, nil).MaxTimes(2)
+
 	gomock.InOrder(
 		mockRepository.EXPECT().Create(gomock.Any()).Return(nil),
-		mockRepository.EXPECT().Create(gomock.Any()).Return(repository.ErrShortURLAlreadyExists),
 		mockRepository.EXPECT().Create(gomock.Any()).Return(nil),
-		mockRepository.EXPECT().Create(gomock.Any()).Return(repository.ErrShortURLAlreadyExists),
+		mockRepository.EXPECT().Create(gomock.Any()).Return(service.ErrShortURLAlreadyExists),
 	)
 
 	for _, test := range tests {
@@ -263,7 +260,7 @@ func TestRedirectByShortURL(t *testing.T) {
 	handler, err := New(cfg.BaseURL, userService)
 	require.NoError(t, err)
 
-	regexCorrectHeaderLocation, err := regexp.Compile("http://" + cfg.BaseURL + "/" + "\\w{" + "8" + "}")
+	//regexCorrectHeaderLocation, err := regexp.Compile("http://" + cfg.BaseURL + "/" + "\\w{" + "8" + "}")
 	require.NoError(t, err)
 
 	type args struct {
@@ -271,6 +268,7 @@ func TestRedirectByShortURL(t *testing.T) {
 	}
 	type want struct {
 		statusCode int
+		location   string
 	}
 	tests := []struct {
 		name string
@@ -280,55 +278,64 @@ func TestRedirectByShortURL(t *testing.T) {
 		{
 			name: "Test /{id} OK",
 			args: args{
-				ShortURL: "ya.ru",
+				ShortURL: "01234567",
 			},
 			want: want{
-				statusCode: http.StatusCreated,
+				statusCode: http.StatusTemporaryRedirect,
+				location:   "ya.ru",
 			},
 		},
 		{
-			name: "Test /{id} Incorrect URL",
+			name: "Test /{id} Not Found",
 			args: args{
-				ShortURL: "",
+				ShortURL: "123",
 			},
 			want: want{
-				statusCode: http.StatusBadRequest,
+				statusCode: http.StatusNotFound,
+				location:   "",
 			},
 		},
 		{
-			name: "Test /api/shorten/batch OK",
-			args: args{
-				ShortURL: "ya.ru",
-			},
-			want: want{
-				statusCode: http.StatusCreated,
-			},
-		}, {
-			name: "Test /api/shorten/batch Incorrect Data",
+			name: "Test /{id} URL is Gone",
 			args: args{
 				ShortURL: "google.com",
 			},
 			want: want{
-				statusCode: http.StatusConflict,
+				statusCode: http.StatusGone,
+				location:   "",
 			},
 		},
 	}
-	mockRepository.EXPECT().GetByURL(gomock.Any()).Return(&model.ShortURL{}, nil).MaxTimes(2)
 	gomock.InOrder(
-		mockRepository.EXPECT().Create(gomock.Any()).Return(nil),
-		mockRepository.EXPECT().Create(gomock.Any()).Return(repository.ErrShortURLAlreadyExists),
-		mockRepository.EXPECT().Create(gomock.Any()).Return(nil),
-		mockRepository.EXPECT().Create(gomock.Any()).Return(repository.ErrShortURLAlreadyExists),
-	)
+		// ------------------------------------------------------
+		// Test /{id} OK
+		// ------------------------------------------------------
+		// Found url
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{URL: "ya.ru"}, nil),
+		// Check is this deleted
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{URL: "ya.ru", IsDeleted: false}, nil),
+		// ------------------------------------------------------
+		// Test /{id} Not Found
+		// ------------------------------------------------------
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(nil, service.ErrShortURLNotFound),
 
+		// ------------------------------------------------------
+		// Test /{id} URL is Gone
+		// ------------------------------------------------------
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{}, nil),
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{IsDeleted: true}, nil),
+	)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
 			d := []byte(test.args.ShortURL)
 			request := httptest.NewRequest(http.MethodPost, target, bytes.NewReader(d))
-
 			request.AddCookie(&http.Cookie{Name: "username", Value: "user"})
 			w := httptest.NewRecorder()
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", test.args.ShortURL)
+			request = request.WithContext(context.WithValue(request.Context(), chi.RouteCtxKey, rctx))
 
 			handler.RedirectByShortURL(w, request)
 
@@ -339,7 +346,7 @@ func TestRedirectByShortURL(t *testing.T) {
 
 			if test.want.statusCode == http.StatusTemporaryRedirect {
 				location := result.Header.Get("location")
-				assert.Regexp(t, regexCorrectHeaderLocation, location)
+				assert.Equal(t, test.want.location, location)
 			}
 		})
 	}

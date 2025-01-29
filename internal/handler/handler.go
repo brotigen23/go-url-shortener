@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/brotigen23/go-url-shortener/internal/database"
@@ -115,10 +116,13 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 	}
 	var URLs []string
 	for _, url := range request {
+		if url.URL == "" {
+			http.Error(rw, "one of urls is empty", http.StatusBadRequest)
+			return
+		}
 		URLs = append(URLs, url.URL)
 	}
 
-	BatchResponse := []*dto.BatchResponse{}
 	userName, err := r.Cookie("username")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -133,6 +137,7 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	BatchResponse := []*dto.BatchResponse{}
 	for i := range request {
 		BatchResponse = append(BatchResponse, &dto.BatchResponse{ID: request[i].ID, ShortURL: h.baseURL + "/" + shortURLs[request[i].URL]})
 	}
@@ -156,6 +161,7 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 // Return URL by Alias
 func (h *handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
+	log.Println(alias)
 	URL, err := h.service.GetShortURL(alias)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
