@@ -9,11 +9,13 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose v2.7.0+incompatible
+	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 )
 
 require (
-	github.com/stretchr/testify v1.9.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 )
 

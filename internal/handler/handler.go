@@ -154,7 +154,7 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Return URL by Alias
-func (h *handler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
 	URL, err := h.service.GetShortURL(alias)
 	if err != nil {
@@ -174,6 +174,7 @@ func (h *handler) GetShortURL(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+// Return user's saved URLs
 func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 	userName, err := r.Cookie("username")
 	if err != nil {
