@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Хендлер обрабатывающий все запросы 
 type Handler struct {
 	baseURL string
 
