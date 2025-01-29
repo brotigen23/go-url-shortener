@@ -2,6 +2,7 @@ package repository
 
 import "github.com/brotigen23/go-url-shortener/internal/model"
 
+// Репозиторий взаимодействующий с базой данных
 type Repository interface {
 	Create(shortURL model.ShortURL) error
 	GetAll() ([]model.ShortURL, error)

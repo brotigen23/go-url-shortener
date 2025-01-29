@@ -23,8 +23,6 @@ doc:
 	~/go/bin/godoc -http=:8080
 
 .PHONY: testCover
-testCover: coverage.out
-	go tool cover -html=coverage.out -o tmp/cover.html
-
-coverage.out:
-	go test ./... -coverprofile coverage.out
+testCover:
+	go test ./... -coverprofile tmp/coverage.out
+	go tool cover -html=tmp/coverage.out -o tmp/cover.html

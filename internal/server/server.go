@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Производит конфигурирование, запуск и завершение работы сервера
 func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	//------------------------------------------------------------
 	// REPOSITORY

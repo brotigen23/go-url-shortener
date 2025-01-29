@@ -16,10 +16,9 @@ import (
 
 const target = "http://localhost:8080/"
 
-var JWT []string
 var wg sync.WaitGroup
 
-func NewRandomString(size int) string {
+func newRandomString(size int) string {
 
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
@@ -33,7 +32,7 @@ func NewRandomString(size int) string {
 	return string(b)
 }
 
-const URLCounts = 10000 / 2
+const urlCounts = 10000 / 2
 
 func main() {
 
@@ -56,8 +55,8 @@ func main() {
 	aliases := []string{}
 
 	log.Println("Create urls")
-	for i := 0; i < URLCounts; i++ {
-		urls = append(urls, NewRandomString(8))
+	for i := 0; i < urlCounts; i++ {
+		urls = append(urls, newRandomString(8))
 	}
 
 	//--------------------------------------------------
@@ -68,7 +67,7 @@ func main() {
 	// /
 	go func() {
 		log.Println("Post urls to /")
-		for i := 0; i < URLCounts/2; i++ {
+		for i := 0; i < urlCounts/2; i++ {
 			resp, err = client.R().
 				SetBody(urls[i]).
 				Post(target)
@@ -80,7 +79,7 @@ func main() {
 	// /api/shorten/batch
 	go func() {
 		log.Println("Post urls to /api/shorten/batch")
-		for i := 0; i < URLCounts/2-1; i += 2 {
+		for i := 0; i < urlCounts/2-1; i += 2 {
 			body, err := json.Marshal([]dto.BatchRequest{
 				{
 					ID:  strconv.Itoa(i),
@@ -114,7 +113,7 @@ func main() {
 	// /api/user/urls
 	go func() {
 		log.Println("Get urls from /api/user/urls")
-		for i := 0; i < URLCounts; i++ {
+		for i := 0; i < urlCounts; i++ {
 			resp, err = client.R().
 				Get(target + "api/user/urls")
 			if err != nil {
@@ -128,7 +127,7 @@ func main() {
 	// /{id}
 	go func() {
 		log.Println("Get urls from /{id}")
-		for i := 0; i < URLCounts/2; i++ {
+		for i := 0; i < urlCounts/2; i++ {
 			if err != nil {
 				log.Println(err)
 				return

@@ -6,6 +6,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+// Содержит поля, необходимые для инициализации и запуска сервера
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" env-default:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" env-default:"http://localhost:8080"`
@@ -15,6 +16,7 @@ type Config struct {
 	JWTSecretKey string `env:"SECRET_KEY" env-default:"secret"`
 }
 
+// Конструктор Config. Производит чтение переменных окружения и флагов
 func NewConfig() (*Config, error) {
 	// Read env
 	cfg := &Config{}

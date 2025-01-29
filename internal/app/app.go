@@ -22,6 +22,7 @@ func initLog() (*zap.SugaredLogger, error) {
 	return logger.Sugar(), nil
 }
 
+// Запускает сервер
 func Run() error {
 
 	logger, err := initLog()

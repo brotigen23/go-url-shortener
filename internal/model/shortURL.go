@@ -1,5 +1,6 @@
 package model
 
+// Сущность базы данных
 type ShortURL struct {
 	ID        int
 	URL       string
@@ -8,6 +9,7 @@ type ShortURL struct {
 	IsDeleted bool
 }
 
+// Создает ShortURL из входящего массива Aliases
 func NewShortURLs(aliases []string) []ShortURL {
 	ret := []ShortURL{}
 	for i, v := range aliases {

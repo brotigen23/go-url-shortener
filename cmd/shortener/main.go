@@ -1,3 +1,4 @@
+// Модуль с точкой входа
 package main
 
 import (

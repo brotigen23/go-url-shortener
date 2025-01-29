@@ -20,6 +20,7 @@ type handler struct {
 	service *service.Service
 }
 
+// Конструктор handler
 func New(baseURL string, service *service.Service) (*handler, error) {
 	return &handler{
 		service: service,
@@ -215,6 +216,7 @@ func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
 
+// Удаляет соответствующие ссылки
 func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 	username, err := r.Cookie("username")
 	if err != nil {
@@ -251,6 +253,7 @@ func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusAccepted)
 }
 
+// Проверяет соединение с базой данных
 func (h *handler) Ping(rw http.ResponseWriter, r *http.Request) {
 	if err := database.CheckPostgresConnection(h.service.GetDSN()); err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)

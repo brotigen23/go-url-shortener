@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Сервис бизнес логики
 type Service struct {
 	repository  repository.Repository
 	lengthAlias int
@@ -15,6 +16,7 @@ type Service struct {
 	logger      *zap.SugaredLogger
 }
 
+// Конструктор Service
 func New(config *config.Config, logger *zap.SugaredLogger, repository repository.Repository) (*Service, error) {
 	return &Service{
 		repository:  repository,
@@ -24,6 +26,7 @@ func New(config *config.Config, logger *zap.SugaredLogger, repository repository
 	}, nil
 }
 
+// Обновляет длину создаваемых алиасов
 func (s *Service) SetLengthAlias(lengthAlias int) {
 	s.lengthAlias = lengthAlias
 }
@@ -117,6 +120,7 @@ func (s Service) IsShortURLDeleted(alias string) (bool, error) {
 	return shortURL.IsDeleted, nil
 }
 
+// Возвращает строку соединения с базой данных
 func (s Service) GetDSN() string {
 	return s.config.DatabaseDSN
 }

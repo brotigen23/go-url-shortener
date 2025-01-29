@@ -10,11 +10,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// Repository с реализацией сохранения данных в базу данных Postgres
 type Repository struct {
 	db     *sql.DB
 	logger *zap.SugaredLogger
 }
 
+// Конструктор Repository
 func New(db *sql.DB, logger *zap.SugaredLogger) *Repository {
 	return &Repository{
 		db:     db,
@@ -22,6 +24,7 @@ func New(db *sql.DB, logger *zap.SugaredLogger) *Repository {
 	}
 }
 
+// Создает новую ссылку
 func (r Repository) Create(shortURL model.ShortURL) error {
 	query := `	
 	INSERT INTO short_url(url, short_url, username) 
@@ -38,6 +41,7 @@ func (r Repository) Create(shortURL model.ShortURL) error {
 	return nil
 }
 
+// Возвращает все имеющиеся данные
 func (r Repository) GetAll() ([]model.ShortURL, error) {
 	ret := []model.ShortURL{}
 	query := `
@@ -69,6 +73,7 @@ func (r Repository) GetAll() ([]model.ShortURL, error) {
 	return ret, nil
 }
 
+// Возвращает все ссылки, сохраненные определенным пользователем
 func (r Repository) GetByUser(username string) ([]model.ShortURL, error) {
 	ret := make([]model.ShortURL, 0, 100)
 	query := `
@@ -99,6 +104,8 @@ func (r Repository) GetByUser(username string) ([]model.ShortURL, error) {
 	}
 	return ret, nil
 }
+
+// Возвращает сущность ссылки по входящему URL
 func (r Repository) GetByURL(url string) (*model.ShortURL, error) {
 	query := `
 	SELECT id, short_url, username, is_deleted 
@@ -123,6 +130,8 @@ func (r Repository) GetByURL(url string) (*model.ShortURL, error) {
 
 	return &model.ShortURL{ID: ID, URL: url, ShortURL: shortURL, Username: username, IsDeleted: IsDeleted}, nil
 }
+
+// Возвращает сущность ссылки по входящему Alias
 func (r Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 	query := `
 	SELECT id, url, username, is_deleted 
@@ -148,8 +157,10 @@ func (r Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 	return &model.ShortURL{ID: ID, URL: url, ShortURL: alias, Username: username, IsDeleted: IsDeleted}, nil
 }
 
+// Обновляет входящую сущность
 func (r Repository) Update(username string, shortURL model.ShortURL) error { return nil }
 
+// Удаляет входящую сущность
 func (r Repository) Delete(username string, shortURL []model.ShortURL) error {
 	aliases := make([]string, 0)
 	for i := range shortURL {
