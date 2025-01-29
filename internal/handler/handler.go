@@ -14,22 +14,22 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type handler struct {
+type Handler struct {
 	baseURL string
 
 	service *service.Service
 }
 
 // Конструктор handler
-func New(baseURL string, service *service.Service) (*handler, error) {
-	return &handler{
+func New(baseURL string, service *service.Service) (*Handler, error) {
+	return &Handler{
 		service: service,
 		baseURL: baseURL,
 	}, nil
 }
 
 // Store new ShortURL
-func (h *handler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 
 	// --------------------------------------------------------------
 	// READ REQUEST DATA
@@ -103,7 +103,7 @@ func (h *handler) CreateShortURL(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Store new ShortURLs
-func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 	request := []dto.BatchRequest{}
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
@@ -160,7 +160,7 @@ func (h *handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Return URL by Alias
-func (h *handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
 	alias := chi.URLParam(r, "id")
 	log.Println(alias)
 	URL, err := h.service.GetShortURL(alias)
@@ -182,7 +182,7 @@ func (h *handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Return user's saved URLs
-func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 	userName, err := r.Cookie("username")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -217,7 +217,7 @@ func (h *handler) GetShortURLs(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Удаляет соответствующие ссылки
-func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) Detele(rw http.ResponseWriter, r *http.Request) {
 	username, err := r.Cookie("username")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -254,7 +254,7 @@ func (h *handler) Detele(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Проверяет соединение с базой данных
-func (h *handler) Ping(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) Ping(rw http.ResponseWriter, r *http.Request) {
 	if err := database.CheckPostgresConnection(h.service.GetDSN()); err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return

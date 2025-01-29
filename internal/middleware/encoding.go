@@ -76,6 +76,7 @@ func (c *compressReader) Close() error {
 	return c.zr.Close()
 }
 
+// Middleware для сжатия ответа
 func Encoding(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ow := w
