@@ -16,25 +16,21 @@ func ExampleHandler_CreateShortURL() {
 	//------------------------------------------------------------
 	// Create service
 	//------------------------------------------------------------
-	serviceShortener, err := service.New(nil, logger, repo)
-	if err != nil {
-		return
-	}
+	serviceShortener := service.New(nil, logger, repo)
 
-	handler, err := New("", serviceShortener)
-	if err != nil {
-		return
-	}
+	handler := New("", serviceShortener)
 
 	logger.Debugln("handler is initialized")
+
+	middleware := middleware.New("", logger)
 
 	//------------------------------------------------------------
 	// Create mux with chi
 	//------------------------------------------------------------
 	r := chi.NewRouter()
 
-	r.Use(middleware.Log(logger))
-	r.Use(middleware.Auth("", logger))
+	r.Use(middleware.Log)
+	r.Use(middleware.Auth)
 	r.Use(middleware.Encoding)
 
 	//------------------------------------------------------------
