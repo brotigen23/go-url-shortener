@@ -11,11 +11,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// Структура Middleware
 type Middleware struct {
 	logger    *zap.SugaredLogger
 	secretKey string
 }
 
+// Создание экземпляра Middleware
 func New(secretKey string, logger *zap.SugaredLogger) *Middleware {
 	return &Middleware{
 		logger:    logger,
@@ -23,6 +25,7 @@ func New(secretKey string, logger *zap.SugaredLogger) *Middleware {
 	}
 }
 
+// Middleware для аутентификации пользователя
 func (m *Middleware) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("JWT")
