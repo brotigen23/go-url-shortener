@@ -22,11 +22,11 @@ type Handler struct {
 }
 
 // Конструктор handler
-func New(baseURL string, service *service.Service) (*Handler, error) {
+func New(baseURL string, service *service.Service) *Handler {
 	return &Handler{
 		service: service,
 		baseURL: baseURL,
-	}, nil
+	}
 }
 
 // Store new ShortURL
@@ -157,7 +157,6 @@ func (h *Handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
-
 }
 
 // Return URL by Alias

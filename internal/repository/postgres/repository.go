@@ -25,24 +25,33 @@ func New(db *sql.DB, logger *zap.SugaredLogger) *Repository {
 }
 
 // Создает новую ссылку
-func (r Repository) Create(shortURL model.ShortURL) error {
+func (r *Repository) Create(shortURL model.ShortURL) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
 	query := `	
 	INSERT INTO short_url(url, short_url, username) 
 	VALUES($1, $2, $3)`
 
-	_, err := r.db.Exec(query, shortURL.URL, shortURL.ShortURL, shortURL.Username)
+	_, err = tx.Exec(query, shortURL.URL, shortURL.ShortURL, shortURL.Username)
 	if err != nil {
 		if err.Error() == `pq: duplicate key value violates unique constraint "short_url_url_key"` {
-			return repository.ErrShortURLAlreadyExists
+			err = repository.ErrShortURLAlreadyExists
 		}
-		r.logger.Errorln(err)
+		e := tx.Rollback()
+		if e != nil {
+			return e
+		}
 		return err
 	}
-	return nil
+	err = tx.Commit()
+	return err
 }
 
 // Возвращает все имеющиеся данные
-func (r Repository) GetAll() ([]model.ShortURL, error) {
+func (r *Repository) GetAll() ([]model.ShortURL, error) {
 	ret := []model.ShortURL{}
 	query := `
 	SELECT id, url, short_url, username, is_deleted 
@@ -74,7 +83,7 @@ func (r Repository) GetAll() ([]model.ShortURL, error) {
 }
 
 // Возвращает все ссылки, сохраненные определенным пользователем
-func (r Repository) GetByUser(username string) ([]model.ShortURL, error) {
+func (r *Repository) GetByUser(username string) ([]model.ShortURL, error) {
 	ret := make([]model.ShortURL, 0, 100)
 	query := `
 	SELECT id, url, short_url, is_deleted 
@@ -106,7 +115,7 @@ func (r Repository) GetByUser(username string) ([]model.ShortURL, error) {
 }
 
 // Возвращает сущность ссылки по входящему URL
-func (r Repository) GetByURL(url string) (*model.ShortURL, error) {
+func (r *Repository) GetByURL(url string) (*model.ShortURL, error) {
 	query := `
 	SELECT id, short_url, username, is_deleted 
 	FROM short_url
@@ -132,7 +141,7 @@ func (r Repository) GetByURL(url string) (*model.ShortURL, error) {
 }
 
 // Возвращает сущность ссылки по входящему Alias
-func (r Repository) GetByAlias(alias string) (*model.ShortURL, error) {
+func (r *Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 	query := `
 	SELECT id, url, username, is_deleted 
 	FROM short_url
@@ -158,10 +167,18 @@ func (r Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 }
 
 // Обновляет входящую сущность
-func (r Repository) Update(username string, shortURL model.ShortURL) error { return nil }
+func (r *Repository) Update(username string, shortURL model.ShortURL) error { return nil }
 
 // Удаляет входящую сущность
-func (r Repository) Delete(username string, shortURL []model.ShortURL) error {
+func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// ------------------------------------------------
+	// generate query
+	// ------------------------------------------------
 	aliases := make([]string, 0)
 	for i := range shortURL {
 		aliases = append(aliases, "")
@@ -173,10 +190,20 @@ func (r Repository) Delete(username string, shortURL []model.ShortURL) error {
 	UPDATE short_url 
 	SET is_deleted = TRUE
 	WHERE short_url IN (%s)`, toDelete)
-	_, err := r.db.Exec(query)
+
+	// ------------------------------------------------
+	// do query
+	// ------------------------------------------------
+	_, err = tx.Exec(query)
+
 	if err != nil {
 		r.logger.Errorln(err)
+		e := tx.Rollback()
+		if e != nil {
+			return e
+		}
 		return err
 	}
-	return nil
+	err = tx.Commit()
+	return err
 }

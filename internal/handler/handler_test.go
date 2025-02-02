@@ -17,7 +17,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
@@ -41,11 +40,9 @@ func TestCreateShortURL(t *testing.T) {
 	defer controller.Finish()
 	mockRepository := mock.NewMockRepository(controller)
 
-	userService, err := service.New(cfg, logger, mockRepository)
-	require.NoError(t, err)
+	userService := service.New(cfg, logger, mockRepository)
 
-	handler, err := New(cfg.BaseURL, userService)
-	require.NoError(t, err)
+	handler := New(cfg.BaseURL, userService)
 
 	type args struct {
 		URL         string
@@ -129,13 +126,14 @@ func TestCreateShortURL(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var d []byte
+			var err error
 			switch test.args.contentType {
 			case "text/plain":
 				d = []byte(test.args.URL)
 			case "application/json":
 				d, err = json.Marshal(dto.ShortenRequest{URL: test.args.URL})
+				assert.NoError(t, err)
 			}
-			assert.NoError(t, err)
 
 			request := httptest.NewRequest(http.MethodPost, target, bytes.NewReader(d))
 			request.Header.Set("content-type", test.args.contentType)
@@ -157,11 +155,9 @@ func TestCreateShortURLs(t *testing.T) {
 	defer controller.Finish()
 	mockRepository := mock.NewMockRepository(controller)
 
-	userService, err := service.New(cfg, logger, mockRepository)
-	require.NoError(t, err)
+	userService := service.New(cfg, logger, mockRepository)
 
-	handler, err := New(cfg.BaseURL, userService)
-	require.NoError(t, err)
+	handler := New(cfg.BaseURL, userService)
 
 	type args struct {
 		URLs []dto.BatchRequest
@@ -254,14 +250,9 @@ func TestRedirectByShortURL(t *testing.T) {
 	defer controller.Finish()
 	mockRepository := mock.NewMockRepository(controller)
 
-	userService, err := service.New(cfg, logger, mockRepository)
-	require.NoError(t, err)
+	userService := service.New(cfg, logger, mockRepository)
 
-	handler, err := New(cfg.BaseURL, userService)
-	require.NoError(t, err)
-
-	//regexCorrectHeaderLocation, err := regexp.Compile("http://" + cfg.BaseURL + "/" + "\\w{" + "8" + "}")
-	require.NoError(t, err)
+	handler := New(cfg.BaseURL, userService)
 
 	type args struct {
 		ShortURL string

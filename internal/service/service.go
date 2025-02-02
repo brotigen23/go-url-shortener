@@ -17,13 +17,13 @@ type Service struct {
 }
 
 // Конструктор Service
-func New(config *config.Config, logger *zap.SugaredLogger, repository repository.Repository) (*Service, error) {
+func New(config *config.Config, logger *zap.SugaredLogger, repository repository.Repository) *Service {
 	return &Service{
 		repository:  repository,
 		lengthAlias: 8,
 		config:      config,
 		logger:      logger,
-	}, nil
+	}
 }
 
 // Обновляет длину создаваемых алиасов
@@ -124,112 +124,3 @@ func (s Service) IsShortURLDeleted(alias string) (bool, error) {
 func (s Service) GetDSN() string {
 	return s.config.DatabaseDSN
 }
-
-// -----------------------------------------------------------------
-//
-//	DEPRECATED
-//
-// -----------------------------------------------------------------
-/*
-func SaveURL(userName string, URL string) (string, error) {
-	user, err := s.repository.GetUserByName(userName)
-	if err != nil {
-		return "", err
-	}
-	alias := utils.NewRandomString(s.lengthAlias)
-	shortURL, err := s.repository.SaveShortURL(*model.NewShortURL(0, URL, alias))
-	if err != nil {
-		if err.Error() == `pq: duplicate key value violates unique constraint "short_urls_url_key"` {
-			s.logger.Debugln("URL:", URL, "already saved as", alias)
-			return shortURL.Alias, err
-		} else {
-			return "", nil
-		}
-	}
-	_, err = s.repository.SaveUserShortURL(*model.NewUsersShortURLs(0, user.ID, shortURL.ID))
-	if err != nil {
-		return "", nil
-	}
-	s.logger.Infoln(shortURL.URL, "saved", URL, "as", alias, "by", userName)
-	return shortURL.Alias, nil
-}
-
-func SaveURLs(userName string, URLs []string) (map[string]string, error) {
-	ret := make(map[string]string)
-	for _, url := range URLs {
-		shortURL, err := s.SaveURL(userName, url)
-		if err != nil {
-			if err.Error() == "URL already exists" {
-				return nil, err
-			} else {
-				return nil, err
-			}
-
-		}
-		ret[url] = shortURL
-	}
-	return ret, nil
-}
-
-func GetURL(alias string) (string, error) {
-	ret, err := s.repository.GetShortURLByAlias(alias)
-	if err != nil {
-		return "", err
-	}
-	return ret.URL, nil
-}
-
-func GetURLs(userName string) (map[string]string, error) {
-	ret := make(map[string]string)
-
-	// Get user entity
-	user, err := s.repository.GetUserByName(userName)
-	if err != nil {
-		return nil, err
-	}
-	// Get user's URL IDs
-	usersURLID, err := s.repository.GetUsersShortURLSByUserID(user.ID)
-	if err != nil {
-		return nil, err
-	}
-	// Get user's shortURL
-	var urls []model.ShortURL1
-	for _, urlID := range usersURLID {
-		url, err := s.repository.GetShortURLByID(urlID.URLID)
-		if err != nil {
-			return nil, err
-		}
-		urls = append(urls, *url)
-	}
-	// Search url with alias
-	for _, url := range urls {
-		ret[url.URL] = url.Alias
-	}
-	return ret, nil
-}
-
-func DeleteURLs(userName string, aliases []string) error {
-	err := s.repository.DeleteShortURLByAliases(aliases)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func IsDeleted(alias string) (bool, error) {
-	d, err := s.repository.GetShortURLByAlias(alias)
-	if err != nil {
-		return false, err
-	}
-	fmt.Println(d)
-	return d.IsDeleted, nil
-}
-
-func CheckDBConnection() error {
-	return nil
-}
-
-func GetBaseURL() string {
-	return s.config.BaseURL
-}
-*/

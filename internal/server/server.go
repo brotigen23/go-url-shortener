@@ -52,31 +52,22 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		}
 		repo = postgres.New(db, logger)
 	}
-	logger.Debugln("repo is initialized")
-
 	//------------------------------------------------------------
 	// SERVICES AND HANDLER
 	//------------------------------------------------------------
-	serviceShortener, err := service.New(config, logger, repo)
-	if err != nil {
-		return err
-	}
-	logger.Debugln("service is initialized")
+	serviceShortener := service.New(config, logger, repo)
 
-	handler, err := handler.New(config.BaseURL, serviceShortener)
-	if err != nil {
-		return err
-	}
+	handler := handler.New(config.BaseURL, serviceShortener)
 
-	logger.Debugln("handler is initialized")
+	middleware := middleware.New(config.JWTSecretKey, logger)
 
 	//------------------------------------------------------------
 	// ROUTER
 	//------------------------------------------------------------
 	r := chi.NewRouter()
 
-	r.Use(middleware.Log(logger))
-	r.Use(middleware.Auth(config.JWTSecretKey, logger)) // TODO: secret key from config
+	r.Use(middleware.Log)
+	r.Use(middleware.Auth) // TODO: secret key from config
 	r.Use(middleware.Encoding)
 
 	r.Get("/{id}", handler.RedirectByShortURL)
