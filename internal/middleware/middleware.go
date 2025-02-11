@@ -32,6 +32,7 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		if err != nil {
 			if err == http.ErrNoCookie {
 				if r.URL.Path == "/api/user/urls" {
+					m.logger.Errorln("No cookie")
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
@@ -60,6 +61,7 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 			}
 		}
 		if cookie.Value == "" {
+			m.logger.Errorln("Coockie is empty")
 			http.Error(w, "username is empty", http.StatusUnauthorized)
 			return
 		}
@@ -70,6 +72,7 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 			return
 		}
 		r.AddCookie(&http.Cookie{Name: "username", Value: username})
+		m.logger.Debug("request from user: ", username)
 		next.ServeHTTP(w, r)
 	})
 }

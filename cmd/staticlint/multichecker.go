@@ -22,7 +22,7 @@ func main() {
 	// Staticcheck
 	for _, v := range staticcheck.Analyzers {
 		if strings.HasPrefix(v.Analyzer.Name, "SA90") {
-			//mychecks = append(mychecks, v.Analyzer)
+			mychecks = append(mychecks, v.Analyzer)
 		}
 	}
 
