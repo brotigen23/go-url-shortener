@@ -4,7 +4,7 @@ all: run
 
 .PHONY: run
 run:
-	go run cmd/shortener/main.go > ./errors.log
+	go run cmd/shortener/main.go 
 
 .PHONY: client
 client:
@@ -26,3 +26,7 @@ doc:
 testCover:
 	go test ./... -coverprofile tmp/coverage.out
 	go tool cover -html=tmp/coverage.out -o tmp/cover.html
+
+.PHONY: vet
+vet:
+	go run cmd/staticlint/multichecker.go ./...

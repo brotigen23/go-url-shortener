@@ -67,7 +67,7 @@ func (r *Repository) GetAll() ([]model.ShortURL, error) {
 	var IsDeleted bool
 
 	for row.Next() {
-		err := row.Scan(&ID, &URL, &shortURL, &username, &IsDeleted)
+		err = row.Scan(&ID, &URL, &shortURL, &username, &IsDeleted)
 		if err != nil {
 			r.logger.Errorln(err)
 			return nil, err
@@ -99,7 +99,7 @@ func (r *Repository) GetByUser(username string) ([]model.ShortURL, error) {
 	var URL, shortURL string
 	var IsDeleted bool
 	for row.Next() {
-		err := row.Scan(&ID, &URL, &shortURL, &IsDeleted)
+		err = row.Scan(&ID, &URL, &shortURL, &IsDeleted)
 		if err != nil {
 			r.logger.Errorln(err)
 			return nil, err

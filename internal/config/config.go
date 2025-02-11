@@ -10,7 +10,7 @@ import (
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" env-default:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" env-default:"http://localhost:8080"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH" env-default:"aliases.txt"`
 	DatabaseDSN     string `env:"DATABASE_DSN"`
 
 	JWTSecretKey string `env:"SECRET_KEY" env-default:"secret"`
