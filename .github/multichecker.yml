@@ -1,0 +1,17 @@
+name: Test with multichecker
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses:
+        with:
+          go-version: stable
+      - name: Run multichecker
+        run: go run ./cmd/staticlint/multichecker.go ./...
