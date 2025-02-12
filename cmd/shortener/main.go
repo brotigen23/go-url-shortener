@@ -8,6 +8,10 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/app"
 )
 
+var (
+	buildVersion, buildDate, buildCommit string
+)
+
 func main() {
 	err := app.Run()
 	if err != nil {
