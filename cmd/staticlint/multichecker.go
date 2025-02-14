@@ -11,6 +11,7 @@ import (
 	"honnef.co/go/tools/staticcheck"
 )
 
+// Анализатор для нахождения прямого выхова функции Exit()
 var MainExitAnalyzer = &analysis.Analyzer{
 	Name: "MainExitAnalyzer",
 	Doc:  "check for not using exit() from main package",
