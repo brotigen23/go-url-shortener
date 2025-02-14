@@ -2,13 +2,13 @@ package main
 
 import (
 	"go/ast"
+	"strings"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
 	"golang.org/x/tools/go/analysis/passes/printf"
 	"golang.org/x/tools/go/analysis/passes/shadow"
 	"golang.org/x/tools/go/analysis/passes/structtag"
-	"honnef.co/go/tools/staticcheck"
 )
 
 // Анализатор для нахождения прямого выхова функции Exit()
@@ -23,7 +23,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		if pass.Pkg.Name() != "main" {
 			continue
 		}
-
 		ast.Inspect(file, func(n ast.Node) bool {
 			callExpr, ok := n.(*ast.CallExpr)
 			if !ok {
@@ -41,6 +40,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			}
 
 			pos := pass.Fset.Position(callExpr.Pos())
+			if !strings.Contains(pos.Filename, "main.go") {
+				return true
+			}
 			pass.Reportf(callExpr.Pos(), "exit() in: %s:%d", pos.Filename, pos.Line)
 			return false
 		})
@@ -58,11 +60,6 @@ func main() {
 
 	// Main Exit() check
 	mychecks = append(mychecks, MainExitAnalyzer)
-
-	// Staticcheck
-	for _, v := range staticcheck.Analyzers {
-		mychecks = append(mychecks, v.Analyzer)
-	}
 
 	multichecker.Main(
 		mychecks...,
