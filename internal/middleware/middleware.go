@@ -40,10 +40,10 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 				m.logger.Debugln("new user", username)
 
 				expires := time.Hour * 1024
-				jwtString, err := utils.BuildJWTString(username, m.secretKey, expires)
-				if err != nil {
-					m.logger.Errorln(err)
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+				jwtString, er := utils.BuildJWTString(username, m.secretKey, expires)
+				if er != nil {
+					m.logger.Errorln(er)
+					http.Error(w, er.Error(), http.StatusInternalServerError)
 					return
 				}
 				cookie = &http.Cookie{

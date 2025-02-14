@@ -37,9 +37,9 @@ func (s Service) CreateShortURL(username string, URL string) (string, error) {
 	err := s.repository.Create(model.ShortURL{URL: URL, ShortURL: alias, Username: username})
 	if err != nil {
 		if err == repository.ErrShortURLAlreadyExists {
-			ret, err := s.repository.GetByURL(URL)
-			if err != nil {
-				return "", err
+			ret, er := s.repository.GetByURL(URL)
+			if er != nil {
+				return "", er
 			}
 			return ret.ShortURL, ErrShortURLAlreadyExists
 		}

@@ -80,7 +80,7 @@ func main() {
 	go func() {
 		log.Println("Post urls to /api/shorten/batch")
 		for i := 0; i < urlCounts/2-1; i += 2 {
-			body, err := json.Marshal([]dto.BatchRequest{
+			body, er := json.Marshal([]dto.BatchRequest{
 				{
 					ID:  strconv.Itoa(i),
 					URL: urls[i],
@@ -89,14 +89,14 @@ func main() {
 					ID:  strconv.Itoa(i + 1),
 					URL: urls[i+1]},
 			})
-			if err != nil {
+			if er != nil {
 				log.Println(err)
 				return
 			}
-			resp, err = client.R().
+			resp, er = client.R().
 				SetBody(body).
 				Post(target + "api/shorten/batch")
-			if err != nil {
+			if er != nil {
 				log.Println(err)
 				return
 			}
