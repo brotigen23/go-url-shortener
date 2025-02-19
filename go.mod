@@ -1,6 +1,6 @@
 module github.com/brotigen23/go-url-shortener
 
-go 1.22.2
+go 1.24
 
 require (
 	github.com/go-chi/chi/v5 v5.2.0
@@ -17,11 +17,9 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/exp/typeparams v0.0.0-20231108232855-2478ac86f678 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	honnef.co/go/tools v0.5.1 // indirect
 )
 
 require (

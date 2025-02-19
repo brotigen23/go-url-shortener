@@ -65,7 +65,8 @@ func TestCreateShortURL(t *testing.T) {
 			want: want{
 				statusCode: http.StatusCreated,
 			},
-		}, {
+		},
+		{
 			name: "Test Conflict text",
 			args: args{
 				URL:         "google.com",
