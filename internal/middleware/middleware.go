@@ -33,7 +33,7 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 			if err == http.ErrNoCookie {
 				if r.URL.Path == "/api/user/urls" {
 					m.logger.Errorln("No cookie")
-					w.WriteHeader(http.StatusUnauthorized)
+					w.WriteHeader(http.StatusNoContent)
 					return
 				}
 				username := utils.NewRandomString(16)

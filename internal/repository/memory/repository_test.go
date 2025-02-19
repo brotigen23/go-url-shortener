@@ -219,8 +219,7 @@ func TestDelete(t *testing.T) {
 		username string
 	}
 	type want struct {
-		shortURLs *model.ShortURL
-		err       error
+		err error
 	}
 	tests := []struct {
 		name string
