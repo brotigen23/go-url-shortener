@@ -32,9 +32,8 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		if err != nil {
 			if err == http.ErrNoCookie {
 				if r.URL.Path == "/api/user/urls" {
-					m.logger.Errorln("No cookie")
+					m.logger.Debugln("No cookie")
 					w.WriteHeader(http.StatusNoContent)
-					return
 				}
 				username := utils.NewRandomString(16)
 				m.logger.Debugln("new user", username)
