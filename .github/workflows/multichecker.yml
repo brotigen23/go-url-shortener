@@ -6,8 +6,10 @@ jobs:
   test:
     name: multichecker
     runs-on: ubuntu-latest
-    container: golang:latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: 
+          go-version: 'stable'
       - name: Run
         run: go run ./cmd/staticlint/multichecker.go ./...
