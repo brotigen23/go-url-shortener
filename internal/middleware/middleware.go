@@ -31,10 +31,6 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		cookie, err := r.Cookie("JWT")
 		if err != nil {
 			if err == http.ErrNoCookie {
-				if r.URL.Path == "/api/user/urls" {
-					m.logger.Debugln("No cookie")
-					w.WriteHeader(http.StatusNoContent)
-				}
 				username := utils.NewRandomString(16)
 				m.logger.Debugln("new user", username)
 

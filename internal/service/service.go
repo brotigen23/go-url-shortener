@@ -71,10 +71,10 @@ func (s Service) CreateShortURLs(username string, URLs []string) (map[string]str
 func (s Service) GetShortURL(alias string) (string, error) {
 	shortURL, err := s.repository.GetByAlias(alias)
 	if err != nil {
+		s.logger.Errorln(err)
 		if err == repository.ErrNoFound {
 			return "", ErrShortURLNotFound
 		}
-		s.logger.Errorln(err)
 		return "", err
 	}
 	return shortURL.URL, nil
@@ -86,10 +86,10 @@ func (s Service) GetShortURLs(username string) (map[string]string, error) {
 	ret := make(map[string]string)
 	shortURLs, err := s.repository.GetByUser(username)
 	if err != nil {
+		s.logger.Errorln(err)
 		if err == repository.ErrNoFound {
 			return nil, ErrShortURLNotFound
 		}
-		s.logger.Errorln(err)
 		return nil, err
 	}
 	for _, v := range shortURLs {
