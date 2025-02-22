@@ -1,48 +1,54 @@
-# go-url-shortener
+# URL Shortener
 
 ```mermaid
 flowchart LR
 
 App --> |Create| Config
+Config --> Server
 App --> |Run| Server
-Server --> |Create| IndexHandler
-Server --> |Create| chi.NewRoute
- IndexHandler --> |Register| chi.NewRoute
+Server --> |Create| Handler
+Server --> |Create| Router
+Handler --> |Register| Router
 ```
-
-
 
 ```mermaid
 ---
-title: URL shotrener
+title: URL shotrener class diagram
 ---
 classDiagram
 
     class Config{
-        +ServerAddress string
-        +BaseURL string
+	+ServerAddress   string 
+	+BaseURL         string 
+	+FileStoragePath string 
+	+DatabaseDSN     string 
     }
 
-    class Alias{
+    class ShortURL{
         -url string
         -alias string
 
-        +constructor(url string, alias string) *Alias
-        +GetURL() string
-        +GetAlias() string
-
+        +constructor(url string, alias string) *ShortURL
     }
 
     class Repository{
-        +GetByAlias(alias string) *Alias, error
-        +GetByURL(url string) *Alias, error
+        +GetByAlias(alias string) *ShortURL, error
+        +GetByURL(url string) *ShortURL, error
         +Save(model Alias) error
     }
     class inMemoryRepository{     
-        -aliases []Alias
+        -aliases []ShortURL
 
-        +GetByAlias(alias string) *Alias, error
-        +GetByURL(url string) *Alias, error
+        +GetByAlias(alias string) *ShortURL, error
+        +GetByURL(url string) *ShortURL, error
+        +Save(model Alias) error
+    }
+    class PostgresRepository{     
+        -db *sql.DB
+
+
+        +GetByAlias(alias string) *ShortURL, error
+        +GetByURL(url string) *ShortURL, error
         +Save(model Alias) error
     }
     class Service{
@@ -50,7 +56,7 @@ classDiagram
         -lengthAlias int
     }
 
-    class indexHandler{
+    class Handler{
         -config *config.Config
         -service *service.Service
 
@@ -58,12 +64,11 @@ classDiagram
         +HandlePOST(rw http.ResponseWriter, r *http.Request)
     }
 
-    indexHandler o-- Config
-    indexHandler o-- Service
+    Handler o-- Config
+    Handler o-- Service
     Service --* Repository
     Repository <|-- inMemoryRepository
+    Repository <|-- PostgresRepository
 
 
-    Repository --> Alias
 ```
-

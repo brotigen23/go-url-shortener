@@ -4,85 +4,104 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
-	"github.com/brotigen23/go-url-shortener/internal/handlers"
-	"github.com/brotigen23/go-url-shortener/internal/repositories"
-	"github.com/brotigen23/go-url-shortener/internal/services"
+	"github.com/brotigen23/go-url-shortener/internal/database/migration"
+	"github.com/brotigen23/go-url-shortener/internal/handler"
+	"github.com/brotigen23/go-url-shortener/internal/middleware"
+	"github.com/brotigen23/go-url-shortener/internal/repository"
+	"github.com/brotigen23/go-url-shortener/internal/repository/memory"
+	"github.com/brotigen23/go-url-shortener/internal/repository/postgres"
+	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
-func Run(conf *config.Config) error {
-	logger, err := zap.NewDevelopment()
-	var repository repositories.Repository
-	if conf.DatabaseDSN != "" {
-		repository, err = repositories.NewPostgresRepository("postgres", conf.DatabaseDSN, logger)
+// Производит конфигурирование, запуск и завершение работы сервера
+func Run(config *config.Config, logger *zap.SugaredLogger) error {
+	//------------------------------------------------------------
+	// REPOSITORY
+	//------------------------------------------------------------
+	var repo repository.Repository
+	const driver = "postgres"
+	switch config.DatabaseDSN {
+	case "":
+		repo = memory.New(nil)
+	default:
+		db, err := sql.Open(driver, config.DatabaseDSN)
 		if err != nil {
 			return err
 		}
-	} else {
-		repository = repositories.NewInMemoryRepo(nil, nil, nil)
-	}
+		defer db.Close()
 
-	if err != nil {
-		return fmt.Errorf("logger init error: %v", err)
+		err = db.Ping()
+		if err != nil {
+			return err
+		}
+		err = migration.MigratePostgresUp(db)
+		if err != nil {
+			return err
+		}
+		repo = postgres.New(db, logger)
 	}
+	//------------------------------------------------------------
+	// SERVICES AND HANDLER
+	//------------------------------------------------------------
+	serviceShortener := service.New(config, logger, repo)
 
+	handler := handler.New(config.BaseURL, serviceShortener)
+
+	middleware := middleware.New(config.JWTSecretKey, logger)
+
+	//------------------------------------------------------------
+	// ROUTER
+	//------------------------------------------------------------
 	r := chi.NewRouter()
 
-	authService, err := services.NewServiceAuth(conf, repository)
-	if err != nil {
-		return err
-	}
+	r.Use(middleware.Log)
+	r.Use(middleware.Auth) // TODO: secret key from config
+	r.Use(middleware.Encoding)
 
-	//aliases, _ := utils.LoadStorage(conf.FileStoragePath)
+	r.Get("/{id}", handler.RedirectByShortURL)
+	r.Get("/ping", handler.Ping)
+	r.Get("/api/user/urls", handler.GetShortURLs)
+	r.Delete("/api/user/urls", handler.Detele)
+	r.Post("/", handler.CreateShortURL)
+	r.Post("/api/shorten", handler.CreateShortURL)
+	r.Post("/api/shorten/batch", handler.CreateShortURLs)
+	//------------------------------------------------------------
+	// pprof
+	//------------------------------------------------------------
+	r.Mount("/debug", http.DefaultServeMux)
 
-	mainHandler, err := handlers.NewMainHandler(conf, nil, logger, repository)
-	if err != nil {
-		return err
-	}
+	logger.Debugln("router is initialized")
 
-	//r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.HandleGET), conf, authService), logger.Sugar()))
-	r.Get("/{id}", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURL), conf, authService), logger.Sugar()))
-	//r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.Ping), conf, authService), logger.Sugar()))
-	r.Get("/ping", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.Ping), conf, authService), logger.Sugar()))
-
-	//r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(indexHandler.GetUsersURL), conf, authService), logger.Sugar()))
-	r.Get("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.GetShortURLs), conf, authService), logger.Sugar()))
-	r.Delete("/api/user/urls", handlers.WithLogging(handlers.WithAuth(handlers.WithZip(mainHandler.Detele), conf, authService), logger.Sugar()))
-
-	//r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOST), conf, authService), logger.Sugar()))
-	r.Post("/", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))
-	//r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.HandlePOSTAPI), conf, authService), logger.Sugar()))
-	r.Post("/api/shorten", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURL), conf, authService), logger.Sugar()))
-	//r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(indexHandler.Batch), conf, authService), logger.Sugar()))
-	r.Post("/api/shorten/batch", handlers.WithLogging(handlers.WithAuth(handlers.GzipMiddleware(mainHandler.CreateShortURLs), conf, authService), logger.Sugar()))
-
-	logger.Sugar().Infoln(
-		"Server is running",
-		"Server address", conf.ServerAddress,
-		"Base URL", conf.BaseURL,
-	)
-	server := &http.Server{Addr: conf.ServerAddress, Handler: r}
+	//------------------------------------------------------------
+	// SERVER
+	//------------------------------------------------------------
+	server := &http.Server{Addr: config.ServerAddress, Handler: r}
 	start := time.Now()
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
 			return
 		}
 	}()
+	logger.Infoln("Server is running")
 
-	// Setting up signal capturing
+	//------------------------------------------------------------
+	// GRACEFULL SHUTDOWN
+	//------------------------------------------------------------
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	// Waiting for SIGINT (kill -2)
 	<-stop
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -92,17 +111,20 @@ func Run(conf *config.Config) error {
 	}
 	duration := time.Since(start)
 
-	logger.Sugar().Infoln(
+	logger.Infoln(
 		"server shutdown",
 		"time running", duration,
 	)
-	shortURLs, err := repository.GetAllShortURL()
-	if err != nil {
-		return err
-	}
-	err = utils.SaveStorage(shortURLs, conf.FileStoragePath)
-	if err != nil {
-		return err
+	if config.DatabaseDSN == "" {
+		shortURLs, err := repo.GetAll()
+		if err != nil {
+			return err
+		}
+		err = utils.SaveStorage(shortURLs, config.FileStoragePath)
+		if err != nil {
+			return err
+		}
+		logger.Infoln("short urls saved to", config.FileStoragePath)
 	}
 	return nil
 }

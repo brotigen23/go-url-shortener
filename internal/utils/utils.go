@@ -3,12 +3,16 @@ package utils
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
+	"github.com/golang-jwt/jwt/v4"
 )
 
+// Создает случайную строку заданной длины
 func NewRandomString(size int) string {
 
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
@@ -23,6 +27,7 @@ func NewRandomString(size int) string {
 	return string(b)
 }
 
+// Производит загрузку данных из файла
 func LoadStorage(filePath string) ([]model.ShortURL, error) {
 	file, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -47,6 +52,7 @@ func LoadStorage(filePath string) ([]model.ShortURL, error) {
 	return aliases, nil
 }
 
+// Создает файл с данными
 func SaveStorage(aliases []model.ShortURL, filePath string) error {
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
@@ -68,4 +74,44 @@ func SaveStorage(aliases []model.ShortURL, filePath string) error {
 		}
 	}
 	return nil
+}
+
+// JWT структура с пользовательскими данными
+type UserJWTClaims struct {
+	jwt.RegisteredClaims
+	Username string
+}
+
+// Производит парсинг JWT и возвращает имя пользователя
+func GetUsernameFromJWT(tokenString string, key string) (string, error) {
+	claims := &UserJWTClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims,
+		func(t *jwt.Token) (interface{}, error) {
+			return []byte(key), nil
+		})
+	if err != nil {
+		return "", err
+	}
+
+	if !token.Valid {
+		return "", fmt.Errorf("token is invalid")
+	}
+	return claims.Username, nil
+}
+
+// Производит создание JWT
+func BuildJWTString(username string, key string, expires time.Duration) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &UserJWTClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expires)),
+		},
+		Username: username,
+	})
+
+	tokenString, err := token.SignedString([]byte(key))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
