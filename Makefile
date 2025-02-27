@@ -4,7 +4,7 @@ all: run
 
 .PHONY: run
 run:
-	go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(shell date)' -X main.buildCommit=asd123" cmd/shortener/main.go 
+	go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(shell date)' -X main.buildCommit=asd123" cmd/shortener/main.go  -c "env.json"
 
 
 .PHONY: client

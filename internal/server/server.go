@@ -90,8 +90,11 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	server := &http.Server{Addr: config.ServerAddress, Handler: r}
 	start := time.Now()
 	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			return
+		if config.EnableHTTPS {
+			c, k := utils.CreateCert()
+			server.ListenAndServeTLS(c.String(), k.String())
+		} else {
+			server.ListenAndServe()
 		}
 	}()
 	logger.Infoln("Server is running")
