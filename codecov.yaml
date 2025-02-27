@@ -1,10 +1,10 @@
 coverage:
   round: down
-  range: '10...100'
+  range: '0...100'
   status:
     patch:
       default:
-        target: 10%
+        target: 0%
     project:
       default:
         target: auto

@@ -35,6 +35,7 @@ func Run() error {
 	}
 	config, err := config.NewConfig()
 	if err != nil {
+		logger.Errorln(err.Error())
 		return err
 	}
 	logger.Infoln("config is loaded", config)

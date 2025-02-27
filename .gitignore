@@ -27,3 +27,5 @@ vendor/
 tmp/
 aliases.txt
 *.log
+
+env.json

@@ -21,6 +21,6 @@ func main() {
 	initTags()
 	err := app.Run()
 	if err != nil {
-		fmt.Printf("App run error: %v", err)
+		fmt.Printf("App run error: %v\n", err)
 	}
 }
