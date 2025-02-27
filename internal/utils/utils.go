@@ -125,7 +125,7 @@ func BuildJWTString(username string, key string, expires time.Duration) (string,
 	return tokenString, nil
 }
 
-func CreateCert() (bytes.Buffer, bytes.Buffer) {
+func CreateCert() (*bytes.Buffer, *bytes.Buffer, error) {
 	cert := &x509.Certificate{
 		// указываем уникальный номер сертификата
 		SerialNumber: big.NewInt(1658),
@@ -162,16 +162,21 @@ func CreateCert() (bytes.Buffer, bytes.Buffer) {
 
 	// кодируем сертификат и ключ в формате PEM, который
 	// используется для хранения и обмена криптографическими ключами
-	var certPEM bytes.Buffer
-	pem.Encode(&certPEM, &pem.Block{
+	var certPEM *bytes.Buffer
+	err = pem.Encode(certPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: certBytes,
 	})
-
-	var privateKeyPEM bytes.Buffer
-	pem.Encode(&privateKeyPEM, &pem.Block{
+	if err != nil {
+		return nil, nil, err
+	}
+	var privateKeyPEM *bytes.Buffer
+	err = pem.Encode(privateKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
-	return certPEM, privateKeyPEM
+	if err != nil {
+		return nil, nil, err
+	}
+	return certPEM, privateKeyPEM, nil
 }
