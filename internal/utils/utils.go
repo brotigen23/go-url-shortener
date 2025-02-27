@@ -125,6 +125,7 @@ func BuildJWTString(username string, key string, expires time.Duration) (string,
 	return tokenString, nil
 }
 
+// Создает необходимые сущности для HTTPS
 func CreateCert() (*bytes.Buffer, *bytes.Buffer, error) {
 	cert := &x509.Certificate{
 		// указываем уникальный номер сертификата
