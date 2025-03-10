@@ -9,6 +9,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/brotigen23/go-url-shortener/internal/config"
@@ -90,7 +91,19 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	server := &http.Server{Addr: config.ServerAddress, Handler: r}
 	start := time.Now()
 	go func() {
-		if err := server.ListenAndServe(); err != nil {
+		var err error
+		if config.EnableHTTPS {
+			c, k, er := utils.CreateCert()
+			if er != nil {
+				logger.Errorln(err)
+				return
+			}
+			err = server.ListenAndServeTLS(c.String(), k.String())
+		} else {
+			err = server.ListenAndServe()
+		}
+		if err != nil {
+			logger.Errorln(err)
 			return
 		}
 	}()
@@ -99,8 +112,11 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	//------------------------------------------------------------
 	// GRACEFULL SHUTDOWN
 	//------------------------------------------------------------
-	stop := make(chan os.Signal, 1)
+	stop := make(chan os.Signal, 4)
 	signal.Notify(stop, os.Interrupt)
+	signal.Notify(stop, syscall.SIGTERM)
+	signal.Notify(stop, syscall.SIGINT)
+	signal.Notify(stop, syscall.SIGQUIT)
 
 	<-stop
 
