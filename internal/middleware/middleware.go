@@ -3,7 +3,9 @@ package middleware
 import (
 	"bytes"
 	"io"
+	"net"
 	"net/http"
+	"net/netip"
 	"strings"
 	"time"
 
@@ -15,13 +17,16 @@ import (
 type Middleware struct {
 	logger    *zap.SugaredLogger
 	secretKey string
+
+	trustedSubnet string
 }
 
 // Создание экземпляра Middleware
-func New(secretKey string, logger *zap.SugaredLogger) *Middleware {
+func New(secretKey string, logger *zap.SugaredLogger, subnet string) *Middleware {
 	return &Middleware{
-		logger:    logger,
-		secretKey: secretKey,
+		logger:        logger,
+		secretKey:     secretKey,
+		trustedSubnet: subnet,
 	}
 }
 
@@ -152,5 +157,34 @@ func (m *Middleware) Log(next http.Handler) http.Handler {
 			"encoding", r.Header.Get("Content-Encoding"),
 			"content-type", r.Header.Get("content-type"),
 		)
+	})
+}
+
+func (m *Middleware) CheckSubnet(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if m.trustedSubnet == "" {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		network, err := netip.ParsePrefix(m.trustedSubnet)
+		if err != nil {
+			m.logger.Errorln("failed to parse:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		host, _, _ := net.SplitHostPort(r.RemoteAddr)
+		ip, err := netip.ParseAddr(host)
+		if err != nil {
+			m.logger.Errorln("failed to parse:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		b := network.Contains(ip)
+		if !b {
+			m.logger.Debugln("not trusted:", ip, network)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }

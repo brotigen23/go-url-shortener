@@ -161,6 +161,7 @@ func (h *Handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 
 // Return URL by Alias
 func (h *Handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
+	log.Println(r.RemoteAddr)
 	alias := chi.URLParam(r, "id")
 	log.Println(alias)
 	URL, err := h.service.GetShortURL(alias)

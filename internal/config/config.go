@@ -22,7 +22,7 @@ type Config struct {
 
 	ConfigFile string `env:"CONFIG"`
 
-	Trusted_subnet string `env:"TRUSTED_SUBNET"`
+	TrustedSubnet string `env:"TRUSTED_SUBNET"`
 }
 
 func readJSONConfig(path string) (*Config, error) {
@@ -91,7 +91,7 @@ func NewConfig() (*Config, error) {
 	cfg.EnableHTTPS = *s
 
 	if *t != "" {
-		cfg.Trusted_subnet = *t
+		cfg.TrustedSubnet = *t
 	}
 	return cfg, nil
 }
