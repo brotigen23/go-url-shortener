@@ -9,13 +9,6 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-/*
-	"server_address": "localhost:8080",
-    "base_url": "http://localhost",
-    "file_storage_path": "/path/to/file.db",
-    "database_dsn": "",
-    "enable_https"
-*/
 // Содержит поля, необходимые для инициализации и запуска сервера
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" env-default:"localhost:8080" json:"server_address"`
@@ -28,6 +21,8 @@ type Config struct {
 	EnableHTTPS bool `env:"ENABLE_HTTPS" env-default:"false" json:"enable_https"`
 
 	ConfigFile string `env:"CONFIG"`
+
+	Trusted_subnet string `env:"TRUSTED_SUBNET"`
 }
 
 func readJSONConfig(path string) (*Config, error) {
@@ -57,6 +52,7 @@ func NewConfig() (*Config, error) {
 	d := flag.String("d", "", "String connection to DB")
 	c := flag.String("c", "", "Config file")
 	s := flag.Bool("s", false, "Enable HTTPS")
+	t := flag.String("t", "", "Trusted subnet")
 
 	flag.Parse()
 	log.Println("BEFORE")
@@ -75,18 +71,27 @@ func NewConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if *a != "" {
 		cfg.ServerAddress = *a
 	}
+
 	if *b != "" {
 		cfg.BaseURL = *b
 	}
+
 	if *d != "" {
 		cfg.DatabaseDSN = *d
 	}
+
 	if *f != "" {
 		cfg.FileStoragePath = *f
 	}
+
 	cfg.EnableHTTPS = *s
+
+	if *t != "" {
+		cfg.Trusted_subnet = *t
+	}
 	return cfg, nil
 }

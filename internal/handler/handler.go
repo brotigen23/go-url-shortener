@@ -261,3 +261,17 @@ func (h *Handler) Ping(rw http.ResponseWriter, r *http.Request) {
 	}
 	rw.WriteHeader(http.StatusOK)
 }
+func (h *Handler) Stats(rw http.ResponseWriter, r *http.Request) {
+	urls, users := h.service.GetStats()
+	stats := dto.Stats{Urls: urls, Users: users}
+	response, err := json.Marshal(stats)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err = rw.Write(response)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+	rw.WriteHeader(http.StatusOK)
+}
