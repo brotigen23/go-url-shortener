@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package go_url_shortener;
+
+option go_package = "brotigen23/go-url-shortener/internal/proto";
+
+message SaveURLRequest{
+    string username = 1;
+    string url = 2;
+}
+message SaveURLResponse{
+    string username = 1;
+    string url = 2;
+}
+
+message BatchURLRequest{
+    string username = 1;
+    repeated string urls = 2;
+}
+
+message BatchURLResponse{
+    string username = 1;
+    repeated string urls = 2;
+}
+
+message GetShortURLRequest{
+    string URL = 1;
+}
+message GetShortURLResponse{
+    string shortURL = 1;
+}
+service Shotener {
+  rpc CreateShortURL (SaveURLRequest) returns (SaveURLResponse) {}
+  rpc CreateShortURLs (BatchURLRequest) returns (BatchURLResponse) {}
+
+  rpc GetShortURL (GetShortURLRequest) returns (GetShortURLResponse) {}
+}
