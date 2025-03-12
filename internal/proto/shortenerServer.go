@@ -30,11 +30,14 @@ func (s ShortenerServer) CreateShortURL(ctx context.Context, r *SaveURLRequest) 
 
 func (s ShortenerServer) CreateShortURLs(ctx context.Context, r *BatchURLRequest) (*BatchURLResponse, error) {
 	shortURLs, err := s.service.CreateShortURLs(r.Username, r.Urls)
+	if err != nil {
+		return nil, err
+	}
 	mas := make([]string, len(shortURLs))
 	for k, v := range shortURLs {
-		i, err := strconv.Atoi(k)
-		if err != nil {
-			return nil, err
+		i, er := strconv.Atoi(k)
+		if er != nil {
+			return nil, er
 		}
 		mas[i] = v
 	}
