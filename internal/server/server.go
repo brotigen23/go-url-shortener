@@ -60,7 +60,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 
 	handler := handler.New(config.BaseURL, serviceShortener)
 
-	middleware := middleware.New(config.JWTSecretKey, logger)
+	middleware := middleware.New(config.JWTSecretKey, logger, config.TrustedSubnet)
 
 	//------------------------------------------------------------
 	// ROUTER
@@ -74,6 +74,9 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	r.Get("/{id}", handler.RedirectByShortURL)
 	r.Get("/ping", handler.Ping)
 	r.Get("/api/user/urls", handler.GetShortURLs)
+
+	r.With(middleware.CheckSubnet).Get("/stats", handler.Stats)
+
 	r.Delete("/api/user/urls", handler.Detele)
 	r.Post("/", handler.CreateShortURL)
 	r.Post("/api/shorten", handler.CreateShortURL)

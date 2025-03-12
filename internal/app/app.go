@@ -39,7 +39,7 @@ func Run() error {
 		return err
 	}
 	logger.Infoln("config is loaded", config)
-	err = server.Run(config, logger)
+	err = server.RunProto(config, logger)
 	if err != nil {
 		logger.Errorln(err)
 		return err

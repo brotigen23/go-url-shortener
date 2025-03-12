@@ -4,7 +4,7 @@ all: run
 
 .PHONY: run
 run:
-	go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(shell date)' -X main.buildCommit=asd123" cmd/shortener/main.go 
+	go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(shell date)' -X main.buildCommit=asd123" cmd/shortener/main.go
 
 
 .PHONY: client
@@ -32,14 +32,22 @@ testCover:
 vet:
 	go run cmd/staticlint/multichecker.go ./...
 
+.PHONY: build
 build:
 	go build -o cmd/shortener/shortener cmd/shortener/main.go
 
+.PHONY: autoTests
 autoTests:
 	./tmp/shortenertest \
 	-source-path=. \
 	-binary-path=cmd/shortener/shortener \
 	-server-port=8080 \
 	-file-storage-path=test/aliases.txt \
-	-database-dsn='host=localhost port=5432 user=myuser password=1234 dbname=mydb sslmode=disable' \
+	-database-dsn='host=localhost port=5432 user=myuser password=1234 dbname=mydb sslmode=disable'
 
+
+.PHONY: proto
+proto:
+	protoc --go_out=internal/ --go_opt=paths=source_relative \
+    --go-grpc_out=internal/ --go-grpc_opt=paths=source_relative \
+    proto/main.proto

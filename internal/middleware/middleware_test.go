@@ -15,7 +15,7 @@ const target = "localhost:8080"
 
 func TestAuth(t *testing.T) {
 	logger := zap.NewNop().Sugar()
-	middleware := New("secretKey", logger)
+	middleware := New("secretKey", logger, "")
 	username := utils.NewRandomString(16)
 
 	expires := time.Hour * 1024

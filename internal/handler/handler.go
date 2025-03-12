@@ -161,6 +161,7 @@ func (h *Handler) CreateShortURLs(rw http.ResponseWriter, r *http.Request) {
 
 // Return URL by Alias
 func (h *Handler) RedirectByShortURL(rw http.ResponseWriter, r *http.Request) {
+	log.Println(r.RemoteAddr)
 	alias := chi.URLParam(r, "id")
 	log.Println(alias)
 	URL, err := h.service.GetShortURL(alias)
@@ -258,6 +259,20 @@ func (h *Handler) Ping(rw http.ResponseWriter, r *http.Request) {
 	if err := database.CheckPostgresConnection(h.service.GetDSN()); err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
+	}
+	rw.WriteHeader(http.StatusOK)
+}
+func (h *Handler) Stats(rw http.ResponseWriter, r *http.Request) {
+	urls, users := h.service.GetStats()
+	stats := dto.Stats{Urls: urls, Users: users}
+	response, err := json.Marshal(stats)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err = rw.Write(response)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
 	rw.WriteHeader(http.StatusOK)
 }

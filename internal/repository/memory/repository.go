@@ -91,3 +91,21 @@ func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 	}
 	return nil
 }
+
+// Return number of URLs
+func (r *Repository) GetURLsCount() int {
+	ret := make(map[string]int)
+	for _, v := range r.shortURLs {
+		ret[v.URL]++
+	}
+	return len(ret)
+}
+
+// Return number of users
+func (r *Repository) GetUsersCount() int {
+	ret := make(map[string]int)
+	for _, v := range r.shortURLs {
+		ret[v.Username]++
+	}
+	return len(ret)
+}

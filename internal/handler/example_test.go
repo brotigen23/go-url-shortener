@@ -22,7 +22,7 @@ func ExampleHandler_CreateShortURL() {
 
 	logger.Debugln("handler is initialized")
 
-	middleware := middleware.New("", logger)
+	middleware := middleware.New("", logger, "")
 
 	//------------------------------------------------------------
 	// Create mux with chi
