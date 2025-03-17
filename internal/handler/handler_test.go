@@ -343,3 +343,102 @@ func TestRedirectByShortURL(t *testing.T) {
 		})
 	}
 }
+
+func TestGetShortURLs(t *testing.T) {
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	mockRepository := mock.NewMockRepository(controller)
+
+	userService := service.New(cfg, logger, mockRepository)
+
+	handler := New(cfg.BaseURL, userService)
+
+	type args struct {
+		ShortURL string
+	}
+	type want struct {
+		statusCode int
+		location   string
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Test /{id} OK",
+			args: args{
+				ShortURL: "01234567",
+			},
+			want: want{
+				statusCode: http.StatusTemporaryRedirect,
+				location:   "ya.ru",
+			},
+		},
+		{
+			name: "Test /{id} Not Found",
+			args: args{
+				ShortURL: "123",
+			},
+			want: want{
+				statusCode: http.StatusNotFound,
+				location:   "",
+			},
+		},
+		{
+			name: "Test /{id} URL is Gone",
+			args: args{
+				ShortURL: "google.com",
+			},
+			want: want{
+				statusCode: http.StatusGone,
+				location:   "",
+			},
+		},
+	}
+	gomock.InOrder(
+		// ------------------------------------------------------
+		// Test /{id} OK
+		// ------------------------------------------------------
+		// Found url
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{URL: "ya.ru"}, nil),
+		// Check is this deleted
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{URL: "ya.ru", IsDeleted: false}, nil),
+		// ------------------------------------------------------
+		// Test /{id} Not Found
+		// ------------------------------------------------------
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(nil, service.ErrShortURLNotFound),
+
+		// ------------------------------------------------------
+		// Test /{id} URL is Gone
+		// ------------------------------------------------------
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{}, nil),
+		mockRepository.EXPECT().GetByAlias(gomock.Any()).Return(&model.ShortURL{IsDeleted: true}, nil),
+	)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			d := []byte(test.args.ShortURL)
+			request := httptest.NewRequest(http.MethodPost, target, bytes.NewReader(d))
+			request.AddCookie(&http.Cookie{Name: "username", Value: "user"})
+			w := httptest.NewRecorder()
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", test.args.ShortURL)
+			request = request.WithContext(context.WithValue(request.Context(), chi.RouteCtxKey, rctx))
+
+			handler.RedirectByShortURL(w, request)
+
+			result := w.Result()
+			defer result.Body.Close()
+
+			assert.Equal(t, test.want.statusCode, result.StatusCode)
+
+			if test.want.statusCode == http.StatusTemporaryRedirect {
+				location := result.Header.Get("location")
+				assert.Equal(t, test.want.location, location)
+			}
+		})
+	}
+}

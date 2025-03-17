@@ -6,14 +6,15 @@ all: run
 run:
 	go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(shell date)' -X main.buildCommit=asd123" cmd/shortener/main.go
 
-
 .PHONY: client
 client:
 	go run cmd/client/main.go
 
 .PHONY: test
 test:
-	go test ./... -v -cover -count=1
+	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose down-to 0
+	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose up
+	~/go/bin/godotenv -f ./.env.test go test ./... -v -cover -count=1
 
 .PHONY: mock
 mock:
@@ -25,7 +26,9 @@ doc:
 
 .PHONY: testCover
 testCover:
-	go test ./... -coverprofile tmp/coverage.out
+	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose down-to 0
+	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose up
+	~/go/bin/godotenv -f ./.env.test go test ./... -coverprofile tmp/coverage.out -count=1
 	go tool cover -html=tmp/coverage.out -o tmp/cover.html
 
 .PHONY: vet

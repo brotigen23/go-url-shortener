@@ -134,7 +134,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		"server shutdown",
 		"time running", duration,
 	)
-	if config.DatabaseDSN == "" {
+	if config.DatabaseDSN == "" && config.FileStoragePath != "" {
 		shortURLs, err := repo.GetAll()
 		if err != nil {
 			return err
