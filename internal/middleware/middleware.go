@@ -101,6 +101,7 @@ func (m *Middleware) Encoding(h http.Handler) http.Handler {
 			// оборачиваем тело запроса в io.Reader с поддержкой декомпрессии
 			cr, err := newCompressReader(r.Body)
 			if err != nil {
+				m.logger.Errorln(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
