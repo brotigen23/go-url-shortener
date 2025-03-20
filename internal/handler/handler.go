@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -245,7 +244,6 @@ func (h *Handler) Detele(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusNoContent)
 		return
 	}
-	fmt.Println(request)
 	err = h.service.DeleteShortURLs(username.Value, request)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)

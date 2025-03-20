@@ -2,6 +2,8 @@ module github.com/brotigen23/go-url-shortener
 
 go 1.23
 
+toolchain go1.23.7
+
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/go-chi/chi/v5 v5.2.1
