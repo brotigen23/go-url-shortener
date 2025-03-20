@@ -17,7 +17,7 @@ import (
 
 func RunProto(config *config.Config, logger *zap.SugaredLogger) error {
 	var repo repository.Repository
-	const driver = "postgres"
+	const driver = "pgx"
 	switch config.DatabaseDSN {
 	case "":
 		repo = memory.New(nil)

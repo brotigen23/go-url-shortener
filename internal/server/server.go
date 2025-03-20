@@ -22,7 +22,7 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +32,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	// REPOSITORY
 	//------------------------------------------------------------
 	var repo repository.Repository
-	const driver = "postgres"
+	const driver = "pgx"
 	switch config.DatabaseDSN {
 	case "":
 		repo = memory.New(nil)
@@ -41,12 +41,13 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		if err != nil {
 			return err
 		}
-		defer db.Close()
-
 		err = db.Ping()
 		if err != nil {
 			return err
 		}
+
+		defer db.Close()
+
 		err = migration.MigratePostgresUp(db)
 		if err != nil {
 			return err

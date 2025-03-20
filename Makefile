@@ -12,8 +12,6 @@ client:
 
 .PHONY: test
 test:
-	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose down-to 0
-	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose up
 	~/go/bin/godotenv -f ./.env.test go test ./... -v -cover -count=1
 
 .PHONY: mock
@@ -26,8 +24,6 @@ doc:
 
 .PHONY: testCover
 testCover:
-	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose down-to 0
-	~/go/bin/godotenv -f ./.env.test ~/go/bin/goose up
 	~/go/bin/godotenv -f ./.env.test go test ./... -coverprofile tmp/coverage.out -count=1
 	go tool cover -html=tmp/coverage.out -o tmp/cover.html
 

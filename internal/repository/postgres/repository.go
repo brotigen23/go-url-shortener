@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
@@ -31,9 +32,7 @@ func (r *Repository) Create(shortURL model.ShortURL) error {
 		return err
 	}
 
-	query := `
-	INSERT INTO short_url(url, short_url, username)
-	VALUES($1, $2, $3)`
+	query := "INSERT INTO short_url(url, short_url, username) VALUES($1, $2, $3)"
 
 	_, err = tx.Exec(query, shortURL.URL, shortURL.ShortURL, shortURL.Username)
 	if err != nil {
@@ -173,6 +172,8 @@ func (r *Repository) Update(username string, shortURL model.ShortURL) error { re
 func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 	tx, err := r.db.Begin()
 	if err != nil {
+		log.Println(err)
+
 		return err
 	}
 
@@ -185,6 +186,7 @@ func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 		aliases[i] = `'` + shortURL[i].ShortURL + `'`
 	}
 	toDelete := strings.Join(aliases[:], ",")
+	log.Println("url to delete", toDelete)
 	r.logger.Debugln("url to delete", toDelete)
 	query := fmt.Sprintf(`
 	UPDATE short_url
