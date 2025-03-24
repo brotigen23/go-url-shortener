@@ -122,6 +122,34 @@ func (mr *MockRepositoryMockRecorder) GetByUser(username interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByUser", reflect.TypeOf((*MockRepository)(nil).GetByUser), username)
 }
 
+// GetURLsCount mocks base method.
+func (m *MockRepository) GetURLsCount() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetURLsCount")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// GetURLsCount indicates an expected call of GetURLsCount.
+func (mr *MockRepositoryMockRecorder) GetURLsCount() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURLsCount", reflect.TypeOf((*MockRepository)(nil).GetURLsCount))
+}
+
+// GetUsersCount mocks base method.
+func (m *MockRepository) GetUsersCount() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersCount")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// GetUsersCount indicates an expected call of GetUsersCount.
+func (mr *MockRepositoryMockRecorder) GetUsersCount() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersCount", reflect.TypeOf((*MockRepository)(nil).GetUsersCount))
+}
+
 // Update mocks base method.
 func (m *MockRepository) Update(username string, shortURL model.ShortURL) error {
 	m.ctrl.T.Helper()

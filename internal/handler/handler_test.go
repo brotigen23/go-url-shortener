@@ -58,62 +58,32 @@ func TestCreateShortURL(t *testing.T) {
 	}{
 		{
 			name: "Test OK text",
-			args: args{
-				URL:         "ya.ru",
-				contentType: "text/plain",
-			},
-			want: want{
-				statusCode: http.StatusCreated,
-			},
+			args: args{URL: "ya.ru", contentType: "text/plain"},
+			want: want{statusCode: http.StatusCreated},
 		},
 		{
 			name: "Test Conflict text",
-			args: args{
-				URL:         "google.com",
-				contentType: "text/plain",
-			},
-			want: want{
-				statusCode: http.StatusConflict,
-			},
+			args: args{URL: "google.com", contentType: "text/plain"},
+			want: want{statusCode: http.StatusConflict},
 		},
 		{
 			name: "Test Incorrect data text",
-			args: args{
-				URL:         "",
-				contentType: "text/plain",
-			},
-			want: want{
-				statusCode: http.StatusBadRequest,
-			},
+			args: args{URL: "", contentType: "text/plain"},
+			want: want{statusCode: http.StatusBadRequest},
 		},
 		{
 			name: "Test OK json",
-			args: args{
-				URL:         "ya.ru",
-				contentType: "application/json",
-			},
-			want: want{
-				statusCode: http.StatusCreated,
-			},
+			args: args{URL: "ya.ru", contentType: "application/json"},
+			want: want{statusCode: http.StatusCreated},
 		}, {
 			name: "Test Conflict json",
-			args: args{
-				URL:         "google.com",
-				contentType: "application/json",
-			},
-			want: want{
-				statusCode: http.StatusConflict,
-			},
+			args: args{URL: "google.com", contentType: "application/json"},
+			want: want{statusCode: http.StatusConflict},
 		},
 		{
 			name: "Test Incorrect data json",
-			args: args{
-				URL:         "",
-				contentType: "application/json",
-			},
-			want: want{
-				statusCode: http.StatusBadRequest,
-			},
+			args: args{URL: "", contentType: "application/json"},
+			want: want{statusCode: http.StatusBadRequest},
 		},
 	}
 	mockRepository.EXPECT().GetByURL(gomock.Any()).Return(&model.ShortURL{}, nil).MaxTimes(2)
@@ -173,48 +143,18 @@ func TestCreateShortURLs(t *testing.T) {
 	}{
 		{
 			name: "Test OK",
-			args: args{
-				URLs: []dto.BatchRequest{
-					{
-						ID:  "0",
-						URL: "ya.ru",
-					},
-					{
-						ID:  "1",
-						URL: "google.com",
-					},
-				},
-			},
-			want: want{
-				statusCode: http.StatusCreated,
-			},
-		}, {
+			args: args{URLs: []dto.BatchRequest{{ID: "0", URL: "ya.ru"}, {ID: "1", URL: "google.com"}}},
+			want: want{statusCode: http.StatusCreated},
+		},
+		{
 			name: "Test Conflict",
-			args: args{
-				URLs: []dto.BatchRequest{
-					{
-						ID:  "0",
-						URL: "ya.ru",
-					},
-				},
-			},
-			want: want{
-				statusCode: http.StatusConflict,
-			},
+			args: args{URLs: []dto.BatchRequest{{ID: "0", URL: "ya.ru"}}},
+			want: want{statusCode: http.StatusConflict},
 		},
 		{
 			name: "Test Incorrect Data",
-			args: args{
-				URLs: []dto.BatchRequest{
-					{
-						ID:  "0",
-						URL: "",
-					},
-				},
-			},
-			want: want{
-				statusCode: http.StatusBadRequest,
-			},
+			args: args{URLs: []dto.BatchRequest{{ID: "0", URL: ""}}},
+			want: want{statusCode: http.StatusBadRequest},
 		},
 	}
 	mockRepository.EXPECT().GetByURL(gomock.Any()).Return(&model.ShortURL{}, nil).MaxTimes(2)
@@ -269,33 +209,18 @@ func TestRedirectByShortURL(t *testing.T) {
 	}{
 		{
 			name: "Test /{id} OK",
-			args: args{
-				ShortURL: "01234567",
-			},
-			want: want{
-				statusCode: http.StatusTemporaryRedirect,
-				location:   "ya.ru",
-			},
+			args: args{ShortURL: "01234567"},
+			want: want{statusCode: http.StatusTemporaryRedirect, location: "ya.ru"},
 		},
 		{
 			name: "Test /{id} Not Found",
-			args: args{
-				ShortURL: "123",
-			},
-			want: want{
-				statusCode: http.StatusNotFound,
-				location:   "",
-			},
+			args: args{ShortURL: "123"},
+			want: want{statusCode: http.StatusNotFound, location: ""},
 		},
 		{
 			name: "Test /{id} URL is Gone",
-			args: args{
-				ShortURL: "google.com",
-			},
-			want: want{
-				statusCode: http.StatusGone,
-				location:   "",
-			},
+			args: args{ShortURL: "google.com"},
+			want: want{statusCode: http.StatusGone, location: ""},
 		},
 	}
 	gomock.InOrder(
@@ -342,4 +267,185 @@ func TestRedirectByShortURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetShortURLs(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	mockRepository := mock.NewMockRepository(controller)
+
+	userService := service.New(cfg, logger, mockRepository)
+
+	handler := New(cfg.BaseURL, userService)
+
+	type args struct {
+		username string
+	}
+	type want struct {
+		statusCode int
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Test /api/user/urls OK",
+			args: args{username: "user1"},
+			want: want{statusCode: http.StatusOK}},
+		{
+			name: "Test /api/user/urls No content",
+			args: args{username: "user2"},
+			want: want{statusCode: http.StatusNoContent},
+		},
+	}
+	gomock.InOrder(
+		mockRepository.EXPECT().GetByUser("user1").Return([]model.ShortURL{{URL: "google.com"}}, nil),
+		mockRepository.EXPECT().GetByUser("user2").Return(nil, nil),
+	)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, target, nil)
+			request.AddCookie(&http.Cookie{Name: "username", Value: test.args.username})
+			w := httptest.NewRecorder()
+
+			handler.GetShortURLs(w, request)
+
+			result := w.Result()
+			defer result.Body.Close()
+
+			assert.Equal(t, test.want.statusCode, result.StatusCode)
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	mockRepository := mock.NewMockRepository(controller)
+
+	userService := service.New(cfg, logger, mockRepository)
+
+	handler := New(cfg.BaseURL, userService)
+
+	type args struct {
+		username  string
+		shortURLs []string
+	}
+	type want struct {
+		statusCode int
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Test /api/user/urls OK",
+			args: args{username: "user1", shortURLs: []string{"google.com"}},
+			want: want{statusCode: http.StatusAccepted}},
+		{
+			name: "Test /api/user/urls No content",
+			args: args{username: "user2"},
+			want: want{statusCode: http.StatusNoContent},
+		},
+	}
+	gomock.InOrder(
+		mockRepository.EXPECT().GetByUser("user1").Return([]model.ShortURL{{URL: "google.com"}}, nil),
+
+		mockRepository.EXPECT().Delete("user1", []model.ShortURL{{ShortURL: tests[0].args.shortURLs[0]}}).Return(nil),
+
+		mockRepository.EXPECT().GetByUser("user2").Return(nil, nil),
+	)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			d, err := json.Marshal(test.args.shortURLs)
+			assert.NoError(t, err)
+
+			request := httptest.NewRequest(http.MethodPost, target, bytes.NewReader(d))
+			request.AddCookie(&http.Cookie{Name: "username", Value: test.args.username})
+			w := httptest.NewRecorder()
+
+			handler.Detele(w, request)
+
+			result := w.Result()
+			defer result.Body.Close()
+
+			assert.Equal(t, test.want.statusCode, result.StatusCode)
+		})
+	}
+}
+
+func TestPing(t *testing.T) {
+	userService := service.New(cfg, logger, nil)
+
+	handler := New(cfg.BaseURL, userService)
+
+	request := httptest.NewRequest(http.MethodPost, target, nil)
+	w := httptest.NewRecorder()
+
+	handler.Ping(w, request)
+
+	result := w.Result()
+	defer result.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, result.StatusCode)
+}
+
+func TestStats(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	mockRepository := mock.NewMockRepository(controller)
+
+	userService := service.New(cfg, logger, mockRepository)
+
+	handler := New(cfg.BaseURL, userService)
+
+	type want struct {
+		statusCode int
+		stats      dto.Stats
+	}
+	tests := []struct {
+		name string
+		want want
+	}{
+		{
+			name: "Test /api/user/urls OK",
+			want: want{statusCode: http.StatusOK, stats: dto.Stats{Urls: 3, Users: 1}},
+		},
+		{
+			name: "Test /api/user/urls OK",
+			want: want{statusCode: http.StatusOK, stats: dto.Stats{Urls: 1, Users: 1}},
+		},
+	}
+	gomock.InOrder(
+		mockRepository.EXPECT().GetURLsCount().Return(3),
+		mockRepository.EXPECT().GetUsersCount().Return(1),
+
+		mockRepository.EXPECT().GetURLsCount().Return(1),
+		mockRepository.EXPECT().GetUsersCount().Return(1),
+	)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, target, nil)
+			w := httptest.NewRecorder()
+
+			handler.Stats(w, request)
+
+			result := w.Result()
+			defer result.Body.Close()
+
+			assert.Equal(t, test.want.statusCode, result.StatusCode)
+
+			var buf bytes.Buffer
+			var stats dto.Stats
+			_, err := buf.ReadFrom(result.Body)
+			assert.NoError(t, err)
+			err = json.Unmarshal(buf.Bytes(), &stats)
+			assert.NoError(t, err)
+			assert.Equal(t, test.want.stats, stats)
+		})
+	}
+
 }

@@ -8,6 +8,42 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGetAll(t *testing.T) {
+	repo := New([]model.ShortURL{
+		{ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false},
+		{ID: 2, URL: "ya.ru", ShortURL: "qwerty", Username: "user", IsDeleted: false},
+		{ID: 3, URL: "example.org", ShortURL: "asd", Username: "asd", IsDeleted: false},
+	})
+	type want struct {
+		shortURLs []model.ShortURL
+		err       error
+	}
+	tests := []struct {
+		name string
+		want want
+	}{
+		{
+			name: "Test OK",
+			want: want{
+				shortURLs: []model.ShortURL{
+					{ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false},
+					{ID: 2, URL: "ya.ru", ShortURL: "qwerty", Username: "user", IsDeleted: false},
+					{ID: 3, URL: "example.org", ShortURL: "asd", Username: "asd", IsDeleted: false},
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			shortURLs, err := repo.GetAll()
+			assert.NoError(t, err)
+			assert.Equal(t, test.want.shortURLs, shortURLs)
+		})
+	}
+}
+
 func TestCreateShortURL(t *testing.T) {
 	repo := New([]model.ShortURL{
 		{ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false},
@@ -207,6 +243,50 @@ func TestGetByAlias(t *testing.T) {
 	}
 }
 
+func TestUpdate(t *testing.T) {
+	type args struct {
+		alias string
+	}
+	type want struct {
+		shortURLs *model.ShortURL
+		err       error
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Test OK",
+			args: args{
+				alias: "12345678",
+			},
+			want: want{
+				shortURLs: &model.ShortURL{
+					ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false,
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "Test Not Found",
+			args: args{
+				alias: "somealias",
+			},
+			want: want{
+				shortURLs: nil,
+				err:       repository.ErrNoFound,
+			},
+		},
+	}
+	// TODO: add update test
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+		})
+	}
+}
+
 func TestDelete(t *testing.T) {
 	repo := New([]model.ShortURL{
 		{ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false},
@@ -243,6 +323,64 @@ func TestDelete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			err := repo.Delete(test.args.username, test.args.shortURL)
 			assert.ErrorIs(t, err, test.want.err)
+		})
+	}
+}
+
+// Return number of URLs
+func TestGetURLsCount(t *testing.T) {
+	repo := New([]model.ShortURL{
+		{ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false},
+		{ID: 2, URL: "ya.ru", ShortURL: "qwerty", Username: "user", IsDeleted: false},
+		{ID: 3, URL: "example.org", ShortURL: "asd", Username: "asd", IsDeleted: false},
+	})
+	type want struct {
+		count int
+	}
+	tests := []struct {
+		name string
+		want want
+	}{
+		{
+			name: "Test OK",
+			want: want{
+				count: 3,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			count := repo.GetURLsCount()
+			assert.Equal(t, test.want.count, count)
+		})
+	}
+}
+
+// Return number of users
+func TestUsersCount(t *testing.T) {
+	repo := New([]model.ShortURL{
+		{ID: 1, URL: "google.com", ShortURL: "12345678", Username: "user", IsDeleted: false},
+		{ID: 2, URL: "ya.ru", ShortURL: "qwerty", Username: "user", IsDeleted: false},
+		{ID: 3, URL: "example.org", ShortURL: "asd", Username: "asd", IsDeleted: false},
+	})
+	type want struct {
+		count int
+	}
+	tests := []struct {
+		name string
+		want want
+	}{
+		{
+			name: "Test OK",
+			want: want{
+				count: 2,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			count := repo.GetUsersCount()
+			assert.Equal(t, test.want.count, count)
 		})
 	}
 }

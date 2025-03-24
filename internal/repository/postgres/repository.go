@@ -2,11 +2,15 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"go.uber.org/zap"
 )
 
@@ -31,13 +35,13 @@ func (r *Repository) Create(shortURL model.ShortURL) error {
 		return err
 	}
 
-	query := `	
-	INSERT INTO short_url(url, short_url, username) 
-	VALUES($1, $2, $3)`
+	query := "INSERT INTO short_url(url, short_url, username) VALUES($1, $2, $3)"
 
 	_, err = tx.Exec(query, shortURL.URL, shortURL.ShortURL, shortURL.Username)
 	if err != nil {
-		if err.Error() == `pq: duplicate key value violates unique constraint "short_url_url_key"` {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			err = repository.ErrShortURLAlreadyExists
 		}
 		e := tx.Rollback()
@@ -54,7 +58,7 @@ func (r *Repository) Create(shortURL model.ShortURL) error {
 func (r *Repository) GetAll() ([]model.ShortURL, error) {
 	ret := []model.ShortURL{}
 	query := `
-	SELECT id, url, short_url, username, is_deleted 
+	SELECT id, url, short_url, username, is_deleted
 	FROM short_url`
 
 	row, err := r.db.Query(query)
@@ -86,7 +90,7 @@ func (r *Repository) GetAll() ([]model.ShortURL, error) {
 func (r *Repository) GetByUser(username string) ([]model.ShortURL, error) {
 	ret := make([]model.ShortURL, 0, 100)
 	query := `
-	SELECT id, url, short_url, is_deleted 
+	SELECT id, url, short_url, is_deleted
 	FROM short_url
 	WHERE username = $1`
 
@@ -117,7 +121,7 @@ func (r *Repository) GetByUser(username string) ([]model.ShortURL, error) {
 // Возвращает сущность ссылки по входящему URL
 func (r *Repository) GetByURL(url string) (*model.ShortURL, error) {
 	query := `
-	SELECT id, short_url, username, is_deleted 
+	SELECT id, short_url, username, is_deleted
 	FROM short_url
 	WHERE url = $1`
 
@@ -143,7 +147,7 @@ func (r *Repository) GetByURL(url string) (*model.ShortURL, error) {
 // Возвращает сущность ссылки по входящему Alias
 func (r *Repository) GetByAlias(alias string) (*model.ShortURL, error) {
 	query := `
-	SELECT id, url, username, is_deleted 
+	SELECT id, url, username, is_deleted
 	FROM short_url
 	WHERE short_url = $1`
 
@@ -173,6 +177,8 @@ func (r *Repository) Update(username string, shortURL model.ShortURL) error { re
 func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 	tx, err := r.db.Begin()
 	if err != nil {
+		log.Println(err)
+
 		return err
 	}
 
@@ -185,9 +191,10 @@ func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 		aliases[i] = `'` + shortURL[i].ShortURL + `'`
 	}
 	toDelete := strings.Join(aliases[:], ",")
+	log.Println("url to delete", toDelete)
 	r.logger.Debugln("url to delete", toDelete)
 	query := fmt.Sprintf(`
-	UPDATE short_url 
+	UPDATE short_url
 	SET is_deleted = TRUE
 	WHERE short_url IN (%s)`, toDelete)
 
@@ -206,4 +213,50 @@ func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 	}
 	err = tx.Commit()
 	return err
+}
+
+// Returns number of URLs
+func (r *Repository) GetURLsCount() int {
+	query := `
+	SELECT COUNT(*)
+	FROM (SELECT DISTINCT url FROM short_url)
+	AS temp`
+
+	row := r.db.QueryRow(query)
+	var count int
+
+	err := row.Scan(&count)
+	if err != nil {
+		r.logger.Errorln(err)
+		return 0
+	}
+	err = row.Err()
+	if err != nil {
+		r.logger.Errorln(err)
+		return 0
+	}
+	return count
+}
+
+// Returns number of users
+func (r *Repository) GetUsersCount() int {
+	query := `
+	SELECT COUNT(*)
+	FROM (SELECT DISTINCT username FROM short_url)
+	AS temp`
+
+	row := r.db.QueryRow(query)
+	var count int
+
+	err := row.Scan(&count)
+	if err != nil {
+		r.logger.Errorln(err)
+		return 0
+	}
+	err = row.Err()
+	if err != nil {
+		r.logger.Errorln(err)
+		return 0
+	}
+	return count
 }

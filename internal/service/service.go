@@ -124,3 +124,10 @@ func (s Service) IsShortURLDeleted(alias string) (bool, error) {
 func (s Service) GetDSN() string {
 	return s.config.DatabaseDSN
 }
+
+// Return number of urls and users
+func (s Service) GetStats() (int, int) {
+	urls := s.repository.GetURLsCount()
+	users := s.repository.GetUsersCount()
+	return urls, users
+}

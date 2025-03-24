@@ -22,7 +22,7 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/service"
 	"github.com/brotigen23/go-url-shortener/internal/utils"
 	"github.com/go-chi/chi/v5"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +32,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	// REPOSITORY
 	//------------------------------------------------------------
 	var repo repository.Repository
-	const driver = "postgres"
+	const driver = "pgx"
 	switch config.DatabaseDSN {
 	case "":
 		repo = memory.New(nil)
@@ -41,12 +41,13 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		if err != nil {
 			return err
 		}
-		defer db.Close()
-
 		err = db.Ping()
 		if err != nil {
 			return err
 		}
+
+		defer db.Close()
+
 		err = migration.MigratePostgresUp(db)
 		if err != nil {
 			return err
@@ -60,7 +61,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 
 	handler := handler.New(config.BaseURL, serviceShortener)
 
-	middleware := middleware.New(config.JWTSecretKey, logger)
+	middleware := middleware.New(config.JWTSecretKey, logger, config.TrustedSubnet)
 
 	//------------------------------------------------------------
 	// ROUTER
@@ -74,6 +75,9 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 	r.Get("/{id}", handler.RedirectByShortURL)
 	r.Get("/ping", handler.Ping)
 	r.Get("/api/user/urls", handler.GetShortURLs)
+
+	r.With(middleware.CheckSubnet).Get("/stats", handler.Stats)
+
 	r.Delete("/api/user/urls", handler.Detele)
 	r.Post("/", handler.CreateShortURL)
 	r.Post("/api/shorten", handler.CreateShortURL)
@@ -131,7 +135,7 @@ func Run(config *config.Config, logger *zap.SugaredLogger) error {
 		"server shutdown",
 		"time running", duration,
 	)
-	if config.DatabaseDSN == "" {
+	if config.DatabaseDSN == "" && config.FileStoragePath != "" {
 		shortURLs, err := repo.GetAll()
 		if err != nil {
 			return err

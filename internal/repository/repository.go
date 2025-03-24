@@ -10,6 +10,9 @@ type Repository interface {
 	GetByURL(url string) (*model.ShortURL, error)
 	GetByAlias(alias string) (*model.ShortURL, error)
 
+	GetURLsCount() int
+	GetUsersCount() int
+
 	Update(username string, shortURL model.ShortURL) error
 
 	Delete(username string, shortURL []model.ShortURL) error
