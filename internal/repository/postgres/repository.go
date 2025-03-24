@@ -215,6 +215,7 @@ func (r *Repository) Delete(username string, shortURL []model.ShortURL) error {
 	return err
 }
 
+// Returns number of URLs
 func (r *Repository) GetURLsCount() int {
 	query := `
 	SELECT COUNT(*)
@@ -236,6 +237,8 @@ func (r *Repository) GetURLsCount() int {
 	}
 	return count
 }
+
+// Returns number of users
 func (r *Repository) GetUsersCount() int {
 	query := `
 	SELECT COUNT(*)

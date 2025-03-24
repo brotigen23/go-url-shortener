@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Runs proto server
 func RunProto(config *config.Config, logger *zap.SugaredLogger) error {
 	var repo repository.Repository
 	const driver = "pgx"

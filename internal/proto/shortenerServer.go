@@ -7,18 +7,21 @@ import (
 	"github.com/brotigen23/go-url-shortener/internal/service"
 )
 
+// Proto server struct
 type ShortenerServer struct {
 	UnimplementedShotenerServer
 
 	service *service.Service
 }
 
+// Return proto server
 func NewShortenerServer(service *service.Service) *ShortenerServer {
 	return &ShortenerServer{
 		service: service,
 	}
 }
 
+// Create short URL
 func (s ShortenerServer) CreateShortURL(ctx context.Context, r *SaveURLRequest) (*SaveURLResponse, error) {
 	shortURL, err := s.service.CreateShortURL(r.Username, r.Url)
 	ret := &SaveURLResponse{
@@ -28,6 +31,7 @@ func (s ShortenerServer) CreateShortURL(ctx context.Context, r *SaveURLRequest) 
 	return ret, err
 }
 
+// Create short URLs
 func (s ShortenerServer) CreateShortURLs(ctx context.Context, r *BatchURLRequest) (*BatchURLResponse, error) {
 	shortURLs, err := s.service.CreateShortURLs(r.Username, r.Urls)
 	if err != nil {
@@ -48,6 +52,7 @@ func (s ShortenerServer) CreateShortURLs(ctx context.Context, r *BatchURLRequest
 	return ret, err
 }
 
+// Returns short URLs
 func (s ShortenerServer) GetShortURL(ctx context.Context, r *GetShortURLRequest) (*GetShortURLResponse, error) {
 	shortURL, err := s.service.GetShortURL(r.URL)
 	if err != nil {

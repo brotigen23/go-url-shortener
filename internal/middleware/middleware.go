@@ -161,6 +161,7 @@ func (m *Middleware) Log(next http.Handler) http.Handler {
 	})
 }
 
+// Check if remote address has correct subnet
 func (m *Middleware) CheckSubnet(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if m.trustedSubnet == "" {
