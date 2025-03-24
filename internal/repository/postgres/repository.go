@@ -2,12 +2,15 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 
 	"github.com/brotigen23/go-url-shortener/internal/model"
 	"github.com/brotigen23/go-url-shortener/internal/repository"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"go.uber.org/zap"
 )
 
@@ -36,7 +39,9 @@ func (r *Repository) Create(shortURL model.ShortURL) error {
 
 	_, err = tx.Exec(query, shortURL.URL, shortURL.ShortURL, shortURL.Username)
 	if err != nil {
-		if err.Error() == `pq: duplicate key value violates unique constraint "short_url_url_key"` {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			err = repository.ErrShortURLAlreadyExists
 		}
 		e := tx.Rollback()
