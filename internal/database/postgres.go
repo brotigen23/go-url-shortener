@@ -4,7 +4,7 @@ import "database/sql"
 
 // Проверяет соединение с базой данных
 func CheckPostgresConnection(dsn string) error {
-	db, err := sql.Open("postgres", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return err
 	}
