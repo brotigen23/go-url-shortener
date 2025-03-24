@@ -261,6 +261,7 @@ func (h *Handler) Ping(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
 
+// Вовзращает количество сокращенных ссылок и пользователей
 func (h *Handler) Stats(rw http.ResponseWriter, r *http.Request) {
 	urls, users := h.service.GetStats()
 	stats := dto.Stats{Urls: urls, Users: users}
